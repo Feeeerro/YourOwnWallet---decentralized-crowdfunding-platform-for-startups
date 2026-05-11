@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables - NEVER commit these
+.env
+.env.*
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Database credentials
+*.pgpass
+.my_pgpass
+_my_pgpass
+pg_service.conf
+_pg_service.conf
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db

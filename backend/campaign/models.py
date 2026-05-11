@@ -22,6 +22,7 @@ class Campaign(models.Model):
     status                    = models.CharField(max_length=50, choices=STATUS_CHOICES)
     campaign_address          = models.CharField(max_length=255)
     campaign_approval_address = models.CharField(max_length=255)
+    transactions              = models.ManyToManyField('transaction.Transaction', blank=True, related_name='campaigns')
 
     def __str__(self):
         return self.campaign_name

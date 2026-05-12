@@ -131,3 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Use custom User instead of the default one
 
 AUTH_USER_MODEL = 'users.User'
+
+# Connection to Hardhat provider
+
+HARDHAT_RPC_URL = env('HARDHAT_RPC_URL', default='http://127.0.0.1:8545')

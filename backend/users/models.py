@@ -19,5 +19,12 @@ class User(AbstractUser):
     role           = models.CharField(max_length=50, choices=ROLE_CHOICES)
     wallet_address = models.CharField(max_length=255)
 
+    def save(self, *args, **kwargs):
+        # Only assign a wallet address on first creation, not on updates
+        if not self.pk and not self.wallet_address:
+            from users.utils import assign_wallet_address
+            self.wallet_address = assign_wallet_address()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.email})"

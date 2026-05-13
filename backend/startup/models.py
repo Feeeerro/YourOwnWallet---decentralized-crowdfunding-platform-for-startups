@@ -25,7 +25,7 @@ class Startup(models.Model):
     address      = models.CharField(max_length=255)
     description  = models.TextField()
     category     = models.CharField(max_length=100)
-    created_at   = models.DateTimeField()
+    created_at   = models.DateTimeField(auto_now_add=True)
     created_by   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='startups')
     status       = models.CharField(max_length=50, choices=STATUS_CHOICES)
 

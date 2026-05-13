@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from campaign.models import Campaign
 from campaign.serializers import CampaignSerializer
+from web3_utils import get_campaign_approval_contract, get_campaign_contract, get_web3
 
 
 @api_view(['GET', 'POST'])
@@ -74,3 +75,153 @@ def campaign_detail(request, pk):
             {'message': 'Campaign deleted successfully'},
             status=status.HTTP_204_NO_CONTENT
         )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def judge_approve(request, pk):
+    """
+    Called by a judge to approve a campaign.
+    - Calls approve() on the CampaignApproval contract
+    - If all 3 judges approved, calls activate() on the Campaign contract
+    - Updates campaign status to 'active' in the database
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'pending':
+        return Response({'error': 'Campaign is not pending'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_approval_contract(campaign.campaign_approval_address)
+
+        # get the judge's wallet address from the database
+        judge_address = request.user.wallet_address
+
+        # call approve() on the CampaignApproval contract
+        approve_tx = contract.functions.approve().transact({'from': judge_address})
+        w3.eth.wait_for_transaction_receipt(approve_tx)
+
+        # check if all 3 judges have now approved
+        if contract.functions.isApproved().call():
+            # activate the campaign contract on the blockchain
+            campaign_contract = get_campaign_contract(campaign.campaign_address)
+            activate_tx = campaign_contract.functions.activate().transact({
+                'from': judge_address
+            })
+            w3.eth.wait_for_transaction_receipt(activate_tx)
+
+            # update campaign status in the database
+            campaign.status = 'active'
+            campaign.save()
+
+        return Response({
+            'message': 'Approval submitted successfully',
+            'campaign_status': campaign.status,
+            'approval_count': contract.functions.approvalCount().call(),
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def judge_reject(request, pk):
+    """
+    Called by a judge to reject a campaign.
+    - Checks the user's wallet address is one of the 3 judges
+    - Calls reject() on the CampaignApproval contract
+    - Updates campaign status to 'inactive'
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'pending':
+        return Response({'error': 'Campaign is not pending'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_approval_contract(campaign.campaign_approval_address)
+
+        judge_address = request.user.wallet_address
+
+        # call reject() on the contract using the judge's address
+        tx_hash = contract.functions.reject().transact({'from': judge_address})
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        # update campaign status to inactive
+        campaign.status = 'inactive'
+        campaign.save()
+
+        return Response({
+            'message': 'Campaign rejected successfully',
+            'campaign_status': campaign.status,
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fund_campaign(request, pk):
+    """
+    Called by an investor to fund a campaign.
+    - Calls fund() on the Campaign contract sending ETH
+    - Creates a Transaction record in the database
+    - Updates the funded amount on the campaign
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'active':
+        return Response({'error': 'Campaign is not active'}, status=status.HTTP_400_BAD_REQUEST)
+
+    amount_eth = request.data.get('amount')
+    if not amount_eth:
+        return Response({'error': 'Amount is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        investor_address = request.user.wallet_address
+
+        # convert ETH amount to wei
+        amount_wei = w3.to_wei(float(amount_eth), 'ether')
+
+        # call fund() on the contract sending ETH
+        tx_hash = contract.functions.fund().transact({
+            'from': investor_address,
+            'value': amount_wei,
+        })
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        # save the transaction to the database
+        from transaction.models import Transaction
+        Transaction.objects.create(
+            sender=request.user,
+            campaign=campaign,
+            amount=amount_eth,
+        )
+
+        # update the funded amount on the campaign
+        from decimal import Decimal
+        campaign.funded += Decimal(str(amount_eth))
+        campaign.save()
+
+        return Response({
+            'message': 'Funding successful',
+            'amount': amount_eth,
+            'total_funded': str(campaign.funded),
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -5,7 +5,7 @@ def get_web3():
     """
     Returns a Web3 instance connected to the local Hardhat network.
     """
-    w3 = Web3(Web3.HTTPProvider(settings.HARDHAT_RPC_URL))
+    w3 = Web3(Web3.HTTPProvider(settings.GANACHE_RPC_URL))
     if not w3.is_connected():
         raise Exception("Cannot connect to the local blockchain. Is Hardhat running?")
     return w3

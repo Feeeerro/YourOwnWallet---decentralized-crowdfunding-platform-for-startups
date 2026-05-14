@@ -25,8 +25,39 @@ def campaign_list(request):
             )
         serializer = CampaignSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(created_by=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                # get the 3 judge addresses from the database
+                from users.models import User
+                judges = User.objects.filter(role='judge').values_list('wallet_address', flat=True)[:3]
+
+                if len(judges) < 3:
+                    return Response(
+                        {'error': 'Not enough judges registered. Need exactly 3 judges.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # deploy the contracts automatically
+                from web3_utils import deploy_campaign_contracts
+                campaign_address, approval_address = deploy_campaign_contracts(
+                    deployer_address=request.user.wallet_address,
+                    judge_addresses=list(judges),
+                    campaign_name=serializer.validated_data['campaign_name'],
+                    target_eth=serializer.validated_data['target'],
+                    duration_days=30
+                )
+
+                # save the campaign with the deployed contract addresses
+                serializer.save(
+                    created_by=request.user,
+                    campaign_address=campaign_address,
+                    campaign_approval_address=approval_address,
+                )
+
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -3,10 +3,12 @@ from campaign.models import Campaign
 
 
 class CampaignSerializer(serializers.ModelSerializer):
-    created_by = serializers.StringRelatedField(read_only=True)
-    startup_name = serializers.CharField(source='startup.startup_name', read_only=True)
+    created_by                = serializers.StringRelatedField(read_only=True)
+    startup_name              = serializers.CharField(source='startup.startup_name', read_only=True)
     # shows how many transactions this campaign has received
-    transactions_count = serializers.IntegerField(source='transactions.count', read_only=True)
+    transactions_count        = serializers.IntegerField(source='transactions.count', read_only=True)
+    campaign_address          = serializers.CharField(required=False, read_only=True)
+    campaign_approval_address = serializers.CharField(required=False, read_only=True)
 
     class Meta:
         model = Campaign

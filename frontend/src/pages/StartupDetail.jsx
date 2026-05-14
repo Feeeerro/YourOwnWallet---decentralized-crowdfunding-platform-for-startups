@@ -1,0 +1,1 @@
+export default function StartupDetail() { return <h1>StartupDetail</h1>; }

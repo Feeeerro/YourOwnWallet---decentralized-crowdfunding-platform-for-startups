@@ -1,0 +1,1 @@
+export default function CampaignList() { return <h1>CampaignList</h1>; }

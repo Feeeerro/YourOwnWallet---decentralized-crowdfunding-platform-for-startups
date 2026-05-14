@@ -67,7 +67,8 @@ REST_FRAMEWORK = {
 
 # CORS — allow React frontend to call the API
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React default port
+    "http://localhost:3000",  # React default port (should be removed)
+    "http://localhost:5173",  # Vite port
 ]
 
 # JWT configuration

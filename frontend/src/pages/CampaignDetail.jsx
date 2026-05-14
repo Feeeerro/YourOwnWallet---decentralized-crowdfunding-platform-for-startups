@@ -1,0 +1,1 @@
+export default function CampaignDetail() { return <h1>CampaignDetail</h1>; }

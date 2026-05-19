@@ -17,6 +17,7 @@ export default function CampaignDetail() {
     const [fundSuccess, setFundSuccess]   = useState('');
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveMessage, setApproveMessage] = useState('');
+    const [judgeVoted, setJudgeVoted] = useState(false);
 
     const fetchData = () => {
         Promise.all([
@@ -69,12 +70,14 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/approve/`);
             setApproveMessage(`✓ ${res.data.message} (${res.data.approval_count}/3 approvals)`);
+            setJudgeVoted(true);
             fetchData();
         } catch (err) {
             const data = err.response?.data;
             if (data?.error) {
                 if (data.error.includes('Already approved')) {
                     setApproveMessage('✗ You have already approved this campaign.');
+                    setJudgeVoted(true);
                 } else if (data.error.includes('not pending')) {
                     setApproveMessage('✗ This campaign is no longer pending.');
                 } else {
@@ -94,6 +97,7 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/reject/`);
             setApproveMessage(`✓ ${res.data.message}`);
+            setJudgeVoted(true);
             fetchData();
         } catch (err) {
             const data = err.response?.data;
@@ -164,29 +168,28 @@ export default function CampaignDetail() {
             {user && user.role === 'judge' && campaign.status === 'pending' && (
                 <div style={styles.card}>
                     <h2 style={styles.sectionTitle}>Judge Actions</h2>
-                    <p style={styles.meta}>As a judge you can approve or reject this campaign.</p>
-                    {approveMessage && <p style={styles.message}>{approveMessage}</p>}
-                    <div style={styles.judgeButtons}>
-                        <button
-                            onClick={handleApprove}
-                            disabled={approveLoading}
-                            style={styles.approveButton}
-                        >
-                            {approveLoading ? 'Processing...' : '✓ Approve'}
-                        </button>
-                        <button
-                            onClick={handleReject}
-                            disabled={approveLoading}
-                            style={styles.rejectButton}
-                        >
-                            {approveLoading ? 'Processing...' : '✗ Reject'}
-                        </button>
-                    </div>
+                    {judgeVoted ? (
+                        <p style={styles.message}>✓ Your vote has been recorded.</p>
+                    ) : (
+                        <>
+                            <p style={styles.meta}>As a judge you can approve or reject this campaign.</p>
+                            {approveMessage && <p style={styles.message}>{approveMessage}</p>}
+                            <div style={styles.judgeButtons}>
+                                <button onClick={handleApprove} disabled={approveLoading} style={styles.approveButton}>
+                                    {approveLoading ? 'Processing...' : '✓ Approve'}
+                                </button>
+                                <button onClick={handleReject} disabled={approveLoading} style={styles.rejectButton}>
+                                    {approveLoading ? 'Processing...' : '✗ Reject'}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 
             {/* Funding section */}
-            {user && user.role === 'investor' && campaign.status === 'active' && (
+            {user && user.role === 'investor' && campaign.status === 'active'
+                && campaign.created_by !== `${user.first_name} ${user.last_name} (${user.email})` && (
                 <div style={styles.card}>
                     <h2 style={styles.sectionTitle}>Fund this Campaign</h2>
                     {fundError   && <p style={styles.error}>{fundError}</p>}

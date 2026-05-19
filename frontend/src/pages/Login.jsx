@@ -33,7 +33,7 @@ export default function Login() {
             <div style={styles.card}>
                 <h2 style={styles.title}>Login</h2>
                 {error && <p style={styles.error}>{error}</p>}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete='off'>
                     <div style={styles.field}>
                         <label>Username</label>
                         <input
@@ -41,6 +41,7 @@ export default function Login() {
                             value={formData.username}
                             onChange={handleChange}
                             style={styles.input}
+                            autoComplete="username"
                             required
                         />
                     </div>
@@ -52,6 +53,7 @@ export default function Login() {
                             value={formData.password}
                             onChange={handleChange}
                             style={styles.input}
+                            autoComplete="current-password"
                             required
                         />
                     </div>

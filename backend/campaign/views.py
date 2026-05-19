@@ -215,6 +215,13 @@ def fund_campaign(request, pk):
     if campaign.status != 'active':
         return Response({'error': 'Campaign is not active'}, status=status.HTTP_400_BAD_REQUEST)
 
+    # prevent the campaign owner from funding their own campaign
+    if campaign.created_by == request.user:
+        return Response(
+            {'error': 'You cannot fund your own campaign'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     amount_eth = request.data.get('amount')
     if not amount_eth:
         return Response({'error': 'Amount is required'}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function CreateCampaign() {
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -19,7 +21,16 @@ export default function CreateCampaign() {
     // Load the user's startups to populate the dropdown
     useEffect(() => {
         api.get('/startup/')
-            .then(res => setStartups(res.data))
+            .then(res => {
+                // filter only startups owned by the current user
+                const myStartups = res.data.filter(
+                    s => s.created_by === `${user.first_name} ${user.last_name} (${user.email})`
+                );
+                setStartups(myStartups);
+                if (myStartups.length === 0) {
+                    setError('You have no startups yet. Create a startup first.');
+                }
+            })
             .catch(() => setError('Failed to load startups'));
     }, []);
 

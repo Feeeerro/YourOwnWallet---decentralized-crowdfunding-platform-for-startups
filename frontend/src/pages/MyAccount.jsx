@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 
 export default function MyAccount() {
@@ -21,6 +22,9 @@ export default function MyAccount() {
             {/* Profile section */}
             <div style={styles.card}>
                 <h1 style={styles.title}>My Account</h1>
+                {user.role === 'startupper' && (
+                    <Link to="/startups/create" style={styles.createButton}>+ Create Startup</Link>
+                )}
                 <div style={styles.profileGrid}>
                     <div style={styles.profileItem}>
                         <span style={styles.label}>Full Name</span>
@@ -109,4 +113,6 @@ const styles = {
     th:          { textAlign: 'left', padding: '0.75rem', borderBottom: '2px solid #e5e7eb', color: '#1e1b4b' },
     td:          { padding: '0.75rem', borderBottom: '1px solid #e5e7eb', color: '#444' },
     empty:       { color: '#666' },
+    accountHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
+    createButton:  { background: '#4f46e5', color: '#fff', padding: '0.5rem 1rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold' },
 };

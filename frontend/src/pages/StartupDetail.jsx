@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 export default function StartupDetail() {
     const { id } = useParams();
+    const { user } = useAuth();
     const [startup, setStartup]   = useState(null);
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading]   = useState(true);
@@ -43,6 +45,10 @@ export default function StartupDetail() {
                 }}>
                     {startup.status}
                 </span>
+                {/* Show create campaign button only to the startup owner */}
+                {user && startup.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
+                    <Link to="/campaigns/create" style={styles.createButton}>+ Create Campaign</Link>
+                )}
             </div>
 
             {/* Details */}
@@ -106,4 +112,6 @@ const styles = {
     progressBar:   { background: '#e5e7eb', borderRadius: '999px', height: '8px', marginBottom: '0.5rem' },
     progressFill:  { background: '#4f46e5', height: '100%', borderRadius: '999px', transition: 'width 0.3s' },
     center:        { textAlign: 'center', marginTop: '3rem', color: '#666' },
+    headerRight:  { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' },
+    createButton: { background: '#4f46e5', color: '#fff', padding: '0.5rem 1rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', whiteSpace: 'nowrap' },  
 };

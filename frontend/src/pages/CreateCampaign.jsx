@@ -38,7 +38,28 @@ export default function CreateCampaign() {
             });
             navigate(`/campaigns/${res.data.id}`);
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create campaign');
+            const data = err.response?.data;
+            if (data?.error) {
+                // blockchain error
+                if (data.error.includes('Cannot connect')) {
+                    setError('Cannot connect to the blockchain. Make sure Ganache is running.');
+                } else if (data.error.includes('Not enough judges')) {
+                    setError('Not enough judges registered. At least 3 judges are needed to create a campaign.');
+                } else {
+                    setError(data.error);
+                }
+            } else if (data) {
+                const messages = Object.entries(data)
+                    .map(([field, errors]) => {
+                        const fieldName = field.replace('_', ' ');
+                        const errorText = Array.isArray(errors) ? errors.join(', ') : errors;
+                        return `${fieldName}: ${errorText}`;
+                    })
+                    .join('\n');
+                setError(messages);
+            } else {
+                setError('Failed to create campaign. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

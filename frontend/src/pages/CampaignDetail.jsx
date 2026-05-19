@@ -42,9 +42,22 @@ export default function CampaignDetail() {
             await api.post(`/campaign/${id}/fund/`, { amount: fundAmount });
             setFundSuccess(`Successfully funded ${fundAmount} ETH!`);
             setFundAmount('');
-            fetchData(); // refresh campaign data
+            fetchData();
         } catch (err) {
-            setFundError(err.response?.data?.error || 'Funding failed');
+            const data = err.response?.data;
+            if (data?.error) {
+                if (data.error.includes('Campaign is not active')) {
+                    setFundError('This campaign is not active yet.');
+                } else if (data.error.includes('deadline')) {
+                    setFundError('This campaign has passed its deadline.');
+                } else if (data.error.includes('Cannot connect')) {
+                    setFundError('Cannot connect to the blockchain. Make sure Ganache is running.');
+                } else {
+                    setFundError(data.error);
+                }
+            } else {
+                setFundError('Funding failed. Please try again.');
+            }
         } finally {
             setFundLoading(false);
         }
@@ -55,10 +68,21 @@ export default function CampaignDetail() {
         setApproveLoading(true);
         try {
             const res = await api.post(`/campaign/${id}/approve/`);
-            setApproveMessage(res.data.message + ` (${res.data.approval_count}/3 approvals)`);
+            setApproveMessage(`✓ ${res.data.message} (${res.data.approval_count}/3 approvals)`);
             fetchData();
         } catch (err) {
-            setApproveMessage(err.response?.data?.error || 'Approval failed');
+            const data = err.response?.data;
+            if (data?.error) {
+                if (data.error.includes('Already approved')) {
+                    setApproveMessage('✗ You have already approved this campaign.');
+                } else if (data.error.includes('not pending')) {
+                    setApproveMessage('✗ This campaign is no longer pending.');
+                } else {
+                    setApproveMessage(`✗ ${data.error}`);
+                }
+            } else {
+                setApproveMessage('✗ Approval failed. Please try again.');
+            }
         } finally {
             setApproveLoading(false);
         }
@@ -69,10 +93,21 @@ export default function CampaignDetail() {
         setApproveLoading(true);
         try {
             const res = await api.post(`/campaign/${id}/reject/`);
-            setApproveMessage(res.data.message);
+            setApproveMessage(`✓ ${res.data.message}`);
             fetchData();
         } catch (err) {
-            setApproveMessage(err.response?.data?.error || 'Rejection failed');
+            const data = err.response?.data;
+            if (data?.error) {
+                if (data.error.includes('Already rejected')) {
+                    setApproveMessage('✗ This campaign has already been rejected.');
+                } else if (data.error.includes('not pending')) {
+                    setApproveMessage('✗ This campaign is no longer pending.');
+                } else {
+                    setApproveMessage(`✗ ${data.error}`);
+                }
+            } else {
+                setApproveMessage('✗ Rejection failed. Please try again.');
+            }
         } finally {
             setApproveLoading(false);
         }

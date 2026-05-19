@@ -27,7 +27,20 @@ export default function Register() {
             await register(formData);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+            const data = err.response?.data;
+            if (data) {
+                // collect all field errors into one message
+                const messages = Object.entries(data)
+                    .map(([field, errors]) => {
+                        const fieldName = field.replace('_', ' ');
+                        const errorText = Array.isArray(errors) ? errors.join(', ') : errors;
+                        return `${fieldName}: ${errorText}`;
+                    })
+                    .join('\n');
+                setError(messages);
+            } else {
+                setError('Registration failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -37,7 +50,13 @@ export default function Register() {
         <div style={styles.container}>
             <div style={styles.card}>
                 <h2 style={styles.title}>Register</h2>
-                {error && <p style={styles.error}>{error}</p>}
+                {error && (
+                    <div style={styles.error}>
+                        {error.split('\n').map((line, i) => (
+                            <p key={i} style={{ margin: '2px 0' }}>{line}</p>
+                        ))}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit}>
                     <div style={styles.row}>
                         <div style={styles.field}>

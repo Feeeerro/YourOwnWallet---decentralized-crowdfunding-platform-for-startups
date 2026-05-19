@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:pk>/finalize/', views.finalize_campaign, name='finalize-campaign'),
     path('<int:pk>/withdraw/', views.withdraw_funds, name='withdraw-funds'),
     path('<int:pk>/refund/', views.claim_refund, name='claim-refund'),
+    path('<int:pk>/judge-status/', views.judge_status, name='judge-status'),
 ]

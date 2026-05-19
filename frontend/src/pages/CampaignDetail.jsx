@@ -34,6 +34,17 @@ export default function CampaignDetail() {
             setCampaign(campaignData);
             setTransactions(transactionsRes.data);
 
+            // check if the current judge has already voted
+            if (user && user.role === 'judge' && campaignData.status === 'pending') {
+                try {
+                    const w3Response = await api.get(`/campaign/${id}/judge-status/`);
+                    setJudgeVoted(w3Response.data.has_voted);
+                } catch {
+                    // if endpoint fails, default to not voted
+                    setJudgeVoted(false);
+                }
+            }
+            
             // auto-finalize if deadline passed and campaign is still active
             if (campaignData.status === 'active') {
                 const now = new Date();
@@ -50,6 +61,7 @@ export default function CampaignDetail() {
                     }
                 }
             }
+            
         } catch {
             setError('Failed to load campaign');
         } finally {

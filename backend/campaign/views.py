@@ -120,6 +120,35 @@ def campaign_detail(request, pk):
             {'message': 'Campaign deleted successfully'},
             status=status.HTTP_204_NO_CONTENT
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def judge_status(request, pk):
+    """
+    Returns whether the current judge has already voted on this campaign.
+    Called on page load to restore the judge's voting state.
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        contract = get_campaign_approval_contract(campaign.campaign_approval_address)
+        judge_address = request.user.wallet_address
+
+        # check both approved and rejected on the blockchain
+        has_approved = contract.functions.hasApproved(judge_address).call()
+        has_rejected = contract.functions.hasRejected(judge_address).call()
+
+        return Response({
+            'has_voted': has_approved or has_rejected,
+            'has_approved': has_approved,
+            'has_rejected': has_rejected,
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

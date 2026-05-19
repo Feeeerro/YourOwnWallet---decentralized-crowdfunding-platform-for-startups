@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from campaign.models import Campaign
 from campaign.serializers import CampaignSerializer
 from web3_utils import get_campaign_approval_contract, get_campaign_contract, get_web3
+from django.utils import timezone
+from decimal import Decimal
+import math
 
 
 @api_view(['GET', 'POST'])
@@ -38,12 +41,23 @@ def campaign_list(request):
 
                 # deploy the contracts automatically
                 from web3_utils import deploy_campaign_contracts
+                # calculate duration in days from now to the deadline
+                deadline = serializer.validated_data['deadline']
+                now = timezone.now()
+                duration_days = math.ceil((deadline - now).total_seconds() / 86400)
+
+                if duration_days < 1:
+                    return Response(
+                        {'error': 'Deadline must be at least 1 day in the future'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
                 campaign_address, approval_address = deploy_campaign_contracts(
                     deployer_address=request.user.wallet_address,
                     judge_addresses=list(judges),
                     campaign_name=serializer.validated_data['campaign_name'],
                     target_eth=serializer.validated_data['target'],
-                    duration_days=30
+                    duration_days=duration_days  # ← use calculated duration
                 )
 
                 # save the campaign with the deployed contract addresses
@@ -260,6 +274,130 @@ def fund_campaign(request, pk):
             'amount': amount_eth,
             'total_funded': str(campaign.funded),
         }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def finalize_campaign(request, pk):
+    """
+    Finalizes a campaign after the deadline has passed.
+    Called automatically by the frontend when the deadline is reached.
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'active':
+        return Response({'error': 'Campaign is not active'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = timezone.now()
+    if now < campaign.deadline:
+        return Response(
+            {'error': 'Campaign deadline has not passed yet'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        tx_hash = contract.functions.finalize().transact({
+            'from': request.user.wallet_address
+        })
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        goal_reached = campaign.funded >= Decimal(str(campaign.target))
+        campaign.status = 'completed' if goal_reached else 'inactive'
+        campaign.save()
+
+        return Response({
+            'message': 'Campaign finalized successfully',
+            'campaign_status': campaign.status,
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def withdraw_funds(request, pk):
+    """
+    Allows the campaign owner to withdraw funds after a successful campaign.
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'completed':
+        return Response({'error': 'Campaign has not succeeded'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if campaign.created_by != request.user:
+        return Response({'error': 'Only the campaign owner can withdraw funds'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        # call withdraw() on the blockchain
+        tx_hash = contract.functions.withdraw().transact({
+            'from': request.user.wallet_address
+        })
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        return Response({
+            'message': f'Successfully withdrawn {campaign.funded} ETH',
+            'amount': str(campaign.funded),
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def claim_refund(request, pk):
+    """
+    Allows an investor to claim a refund after a failed campaign.
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if campaign.status != 'inactive':
+        return Response({'error': 'Campaign has not failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # check if the investor has funded this campaign
+    from transaction.models import Transaction
+    investor_transactions = Transaction.objects.filter(
+        campaign=campaign,
+        sender=request.user
+    )
+    if not investor_transactions.exists():
+        return Response({'error': 'You have not invested in this campaign'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        # call claimRefund() on the blockchain
+        tx_hash = contract.functions.claimRefund().transact({
+            'from': request.user.wallet_address
+        })
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        # calculate total refund amount
+        total_refund = sum(tx.amount for tx in investor_transactions)
+
+        return Response({
+            'message': f'Successfully refunded {total_refund} ETH',
+            'amount': str(total_refund),
+        })
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

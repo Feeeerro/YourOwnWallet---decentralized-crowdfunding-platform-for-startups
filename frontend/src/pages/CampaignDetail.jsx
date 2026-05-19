@@ -18,18 +18,43 @@ export default function CampaignDetail() {
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveMessage, setApproveMessage] = useState('');
     const [judgeVoted, setJudgeVoted] = useState(false);
+    const [withdrawLoading, setWithdrawLoading] = useState(false);
+    const [withdrawMessage, setWithdrawMessage] = useState('');
+    const [refundLoading, setRefundLoading] = useState(false);
+    const [refundMessage, setRefundMessage] = useState('');
 
-    const fetchData = () => {
-        Promise.all([
-            api.get(`/campaign/${id}/`),
-            api.get(`/transaction/campaign/${id}/`)
-        ])
-        .then(([campaignRes, transactionsRes]) => {
-            setCampaign(campaignRes.data);
+    const fetchData = async () => {
+        try {
+            const [campaignRes, transactionsRes] = await Promise.all([
+                api.get(`/campaign/${id}/`),
+                api.get(`/transaction/campaign/${id}/`)
+            ]);
+            
+            const campaignData = campaignRes.data;
+            setCampaign(campaignData);
             setTransactions(transactionsRes.data);
-        })
-        .catch(() => setError('Failed to load campaign'))
-        .finally(() => setLoading(false));
+
+            // auto-finalize if deadline passed and campaign is still active
+            if (campaignData.status === 'active') {
+                const now = new Date();
+                const deadline = new Date(campaignData.deadline);
+                if (now >= deadline) {
+                    try {
+                        await api.post(`/campaign/${id}/finalize/`);
+                        // refresh after finalization
+                        const updated = await api.get(`/campaign/${id}/`);
+                        setCampaign(updated.data);
+                    } catch (err) {
+                        // finalization might fail if already finalized — ignore silently
+                        console.log('Auto-finalize:', err.response?.data?.error);
+                    }
+                }
+            }
+        } catch {
+            setError('Failed to load campaign');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => { fetchData(); }, [id]);
@@ -114,6 +139,34 @@ export default function CampaignDetail() {
             }
         } finally {
             setApproveLoading(false);
+        }
+    };
+
+    const handleWithdraw = async () => {
+        setWithdrawMessage('');
+        setWithdrawLoading(true);
+        try {
+            const res = await api.post(`/campaign/${id}/withdraw/`);
+            setWithdrawMessage(`✓ ${res.data.message}`);
+            fetchData();
+        } catch (err) {
+            setWithdrawMessage(`✗ ${err.response?.data?.error || 'Withdrawal failed'}`);
+        } finally {
+            setWithdrawLoading(false);
+        }
+    };
+
+    const handleRefund = async () => {
+        setRefundMessage('');
+        setRefundLoading(true);
+        try {
+            const res = await api.post(`/campaign/${id}/refund/`);
+            setRefundMessage(`✓ ${res.data.message}`);
+            fetchData();
+        } catch (err) {
+            setRefundMessage(`✗ ${err.response?.data?.error || 'Refund failed'}`);
+        } finally {
+            setRefundLoading(false);
         }
     };
 
@@ -209,6 +262,43 @@ export default function CampaignDetail() {
                             {fundLoading ? 'Processing...' : 'Fund Now'}
                         </button>
                     </form>
+                </div>
+            )}
+
+            {/* Withdraw section — owner after success */}
+            {user && campaign.status === 'completed'
+            && campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
+                <div style={styles.card}>
+                    <h2 style={styles.sectionTitle}>Withdraw Funds</h2>
+                    <p style={styles.meta}>
+                        Your campaign succeeded! You can now withdraw <strong>{campaign.funded} ETH</strong>.
+                    </p>
+                    {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
+                    <button
+                        onClick={handleWithdraw}
+                        disabled={withdrawLoading}
+                        style={styles.approveButton}
+                    >
+                        {withdrawLoading ? 'Processing...' : `Withdraw ${campaign.funded} ETH`}
+                    </button>
+                </div>
+            )}
+
+            {/* Refund section — investors after failure */}
+            {user && user.role === 'investor' && campaign.status === 'inactive' && (
+                <div style={styles.card}>
+                    <h2 style={styles.sectionTitle}>Claim Refund</h2>
+                    <p style={styles.meta}>
+                        This campaign did not reach its goal. You can claim a refund for your investment.
+                    </p>
+                    {refundMessage && <p style={styles.message}>{refundMessage}</p>}
+                    <button
+                        onClick={handleRefund}
+                        disabled={refundLoading}
+                        style={styles.rejectButton}
+                    >
+                        {refundLoading ? 'Processing...' : 'Claim Refund'}
+                    </button>
                 </div>
             )}
 

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 12;
 
 export default function StartupList() {
     const [startups, setStartups] = useState([]);
@@ -10,13 +13,13 @@ export default function StartupList() {
     const [statusFilter, setStatusFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
     const [categories, setCategories] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         api.get('/startup/')
             .then((res) => {
                 setStartups(res.data);
                 setFiltered(res.data);
-                // extract unique categories from startups
                 const unique = [...new Set(res.data.map((s) => s.category).filter(Boolean))];
                 setCategories(unique);
             })
@@ -24,25 +27,23 @@ export default function StartupList() {
             .finally(() => setLoading(false));
     }, []);
 
-    // apply filters whenever they change
     useEffect(() => {
         let result = startups;
-
-        if (statusFilter) {
-            result = result.filter((s) => s.status === statusFilter);
-        }
-
-        if (categoryFilter) {
-            result = result.filter((s) => s.category === categoryFilter);
-        }
-
+        if (statusFilter) result = result.filter((s) => s.status === statusFilter);
+        if (categoryFilter) result = result.filter((s) => s.category === categoryFilter);
         setFiltered(result);
+        setCurrentPage(1);
     }, [statusFilter, categoryFilter, startups]);
 
     const handleReset = () => {
         setStatusFilter('');
         setCategoryFilter('');
     };
+
+    const paginated = filtered.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     if (loading) return <p style={styles.center}>Loading...</p>;
     if (error) return <p style={styles.center}>{error}</p>;
@@ -92,26 +93,40 @@ export default function StartupList() {
             {filtered.length === 0 ? (
                 <p style={styles.center}>No startups match your filters.</p>
             ) : (
-                <div style={styles.grid}>
-                    {filtered.map((startup) => (
-                        <Link to={`/startups/${startup.id}`} key={startup.id} style={styles.card}>
-                            <h2 style={styles.cardTitle}>{startup.startup_name}</h2>
-                            <p style={styles.cardMeta}>
-                                {startup.category} · {startup.country}
-                            </p>
-                            <p style={styles.cardDescription}>{startup.description}</p>
-                            <span
-                                style={{
-                                    ...styles.badge,
-                                    background: startup.status === 'active' ? '#d1fae5' : '#fef3c7',
-                                    color: startup.status === 'active' ? '#065f46' : '#92400e',
-                                }}
+                <>
+                    <div style={styles.grid}>
+                        {paginated.map((startup) => (
+                            <Link
+                                to={`/startups/${startup.id}`}
+                                key={startup.id}
+                                style={styles.card}
                             >
-                                {startup.status}
-                            </span>
-                        </Link>
-                    ))}
-                </div>
+                                <h2 style={styles.cardTitle}>{startup.startup_name}</h2>
+                                <p style={styles.cardMeta}>
+                                    {startup.category} · {startup.country}
+                                </p>
+                                <p style={styles.cardDescription}>{startup.description}</p>
+                                <span
+                                    style={{
+                                        ...styles.badge,
+                                        background:
+                                            startup.status === 'active' ? '#d1fae5' : '#fef3c7',
+                                        color: startup.status === 'active' ? '#065f46' : '#92400e',
+                                    }}
+                                >
+                                    {startup.status}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalItems={filtered.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={setCurrentPage}
+                    />
+                </>
             )}
         </div>
     );

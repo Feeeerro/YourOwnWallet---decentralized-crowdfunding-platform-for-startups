@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 12;
 
 export default function CampaignList() {
     const [campaigns, setCampaigns] = useState([]);
@@ -10,45 +13,13 @@ export default function CampaignList() {
     const [statusFilter, setStatusFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
     const [categories, setCategories] = useState([]);
-
-    const getBadgeStyle = (status) => ({
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-        background:
-            status === 'active'
-                ? '#d1fae5'
-                : status === 'pending'
-                  ? '#fef3c7'
-                  : status === 'completed'
-                    ? '#dbeafe'
-                    : status === 'failed'
-                      ? '#fee2e2'
-                      : status === 'rejected'
-                        ? '#f3f4f6'
-                        : '#f3f4f6',
-        color:
-            status === 'active'
-                ? '#065f46'
-                : status === 'pending'
-                  ? '#92400e'
-                  : status === 'completed'
-                    ? '#1e40af'
-                    : status === 'failed'
-                      ? '#991b1b'
-                      : status === 'rejected'
-                        ? '#374151'
-                        : '#374151',
-    });
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         api.get('/campaign/')
             .then((res) => {
                 setCampaigns(res.data);
                 setFiltered(res.data);
-                // extract unique categories from campaigns
                 const unique = [...new Set(res.data.map((c) => c.category).filter(Boolean))];
                 setCategories(unique);
             })
@@ -56,25 +27,25 @@ export default function CampaignList() {
             .finally(() => setLoading(false));
     }, []);
 
-    // apply filters whenever they change
+    // apply filters and reset to page 1 whenever filters change
     useEffect(() => {
         let result = campaigns;
-
-        if (statusFilter) {
-            result = result.filter((c) => c.status === statusFilter);
-        }
-
-        if (categoryFilter) {
-            result = result.filter((c) => c.category === categoryFilter);
-        }
-
+        if (statusFilter) result = result.filter((c) => c.status === statusFilter);
+        if (categoryFilter) result = result.filter((c) => c.category === categoryFilter);
         setFiltered(result);
+        setCurrentPage(1); // ← reset to first page when filters change
     }, [statusFilter, categoryFilter, campaigns]);
 
     const handleReset = () => {
         setStatusFilter('');
         setCategoryFilter('');
     };
+
+    // get only the items for the current page
+    const paginated = filtered.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     if (loading) return <p style={styles.center}>Loading...</p>;
     if (error) return <p style={styles.center}>{error}</p>;
@@ -93,6 +64,7 @@ export default function CampaignList() {
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="active">Active</option>
+                    <option value="completed">Completed</option>
                     <option value="failed">Failed</option>
                     <option value="rejected">Rejected</option>
                 </select>
@@ -125,40 +97,73 @@ export default function CampaignList() {
             {filtered.length === 0 ? (
                 <p style={styles.center}>No campaigns match your filters.</p>
             ) : (
-                <div style={styles.grid}>
-                    {filtered.map((campaign) => (
-                        <Link
-                            to={`/campaigns/${campaign.id}`}
-                            key={campaign.id}
-                            style={styles.card}
-                        >
-                            <div style={styles.cardHeader}>
-                                <h2 style={styles.cardTitle}>{campaign.campaign_name}</h2>
-                                <span style={getBadgeStyle(campaign.status)}>
-                                    {campaign.status}
-                                </span>
-                            </div>
-                            <p style={styles.startup}>{campaign.startup_name}</p>
-                            <p style={styles.description}>{campaign.description}</p>
-                            <div style={styles.progressBar}>
-                                <div
-                                    style={{
-                                        ...styles.progressFill,
-                                        width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
-                                    }}
-                                />
-                            </div>
-                            <div style={styles.stats}>
-                                <span>
-                                    {campaign.funded} / {campaign.target} ETH
-                                </span>
-                                <span>
-                                    Deadline: {new Date(campaign.deadline).toLocaleDateString()}
-                                </span>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                <>
+                    <div style={styles.grid}>
+                        {paginated.map((campaign) => (
+                            <Link
+                                to={`/campaigns/${campaign.id}`}
+                                key={campaign.id}
+                                style={styles.card}
+                            >
+                                <div style={styles.cardHeader}>
+                                    <h2 style={styles.cardTitle}>{campaign.campaign_name}</h2>
+                                    <span
+                                        style={{
+                                            ...styles.badge,
+                                            background:
+                                                campaign.status === 'active'
+                                                    ? '#d1fae5'
+                                                    : campaign.status === 'pending'
+                                                      ? '#fef3c7'
+                                                      : campaign.status === 'completed'
+                                                        ? '#dbeafe'
+                                                        : campaign.status === 'failed'
+                                                          ? '#fee2e2'
+                                                          : '#f3f4f6',
+                                            color:
+                                                campaign.status === 'active'
+                                                    ? '#065f46'
+                                                    : campaign.status === 'pending'
+                                                      ? '#92400e'
+                                                      : campaign.status === 'completed'
+                                                        ? '#1e40af'
+                                                        : campaign.status === 'failed'
+                                                          ? '#991b1b'
+                                                          : '#374151',
+                                        }}
+                                    >
+                                        {campaign.status}
+                                    </span>
+                                </div>
+                                <p style={styles.startup}>{campaign.startup_name}</p>
+                                <p style={styles.description}>{campaign.description}</p>
+                                <div style={styles.progressBar}>
+                                    <div
+                                        style={{
+                                            ...styles.progressFill,
+                                            width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
+                                        }}
+                                    />
+                                </div>
+                                <div style={styles.stats}>
+                                    <span>
+                                        {campaign.funded} / {campaign.target} ETH
+                                    </span>
+                                    <span>
+                                        Deadline: {new Date(campaign.deadline).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalItems={filtered.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={setCurrentPage}
+                    />
+                </>
             )}
         </div>
     );

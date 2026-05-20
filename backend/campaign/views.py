@@ -65,6 +65,7 @@ def campaign_list(request):
                     created_by=request.user,
                     campaign_address=campaign_address,
                     campaign_approval_address=approval_address,
+                    status='pending',
                 )
 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)

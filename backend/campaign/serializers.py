@@ -28,4 +28,4 @@ class CampaignSerializer(serializers.ModelSerializer):
             'campaign_approval_address',
             'transactions_count',
         ]
-        read_only_fields = ['created_at', 'created_by', 'funded', 'startup_name', 'transactions_count']
+        read_only_fields = ['created_at', 'created_by', 'funded', 'startup_name', 'transactions_count', 'campaign_address', 'campaign_approval_address', 'status',]

@@ -11,6 +11,26 @@ export default function StartupDetail() {
     const [loading, setLoading]   = useState(true);
     const [error, setError]       = useState('');
 
+    const getBadgeStyle = (status) => ({
+        padding: '0.25rem 0.75rem',
+        borderRadius: '999px',
+        fontSize: '0.8rem',
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap',
+        background: status === 'active' ? '#d1fae5'
+                : status === 'pending' ? '#fef3c7'
+                : status === 'completed' ? '#dbeafe'
+                : status === 'failed' ? '#fee2e2'
+                : status === 'rejected' ? '#f3f4f6'
+                : '#f3f4f6',
+        color: status === 'active' ? '#065f46'
+            : status === 'pending' ? '#92400e'
+            : status === 'completed' ? '#1e40af'
+            : status === 'failed' ? '#991b1b'
+            : status === 'rejected' ? '#374151'
+            : '#374151',
+    });
+
     useEffect(() => {
         Promise.all([
             api.get(`/startup/${id}/`),
@@ -38,11 +58,7 @@ export default function StartupDetail() {
                     <h1 style={styles.title}>{startup.startup_name}</h1>
                     <p style={styles.meta}>{startup.category} · {startup.country} · {startup.continent}</p>
                 </div>
-                <span style={{
-                    ...styles.badge,
-                    background: startup.status === 'active' ? '#d1fae5' : '#fef3c7',
-                    color: startup.status === 'active' ? '#065f46' : '#92400e',
-                }}>
+                <span style={getBadgeStyle(startup.status)}>
                     {startup.status}
                 </span>
                 {/* Show create campaign button only to the startup owner */}

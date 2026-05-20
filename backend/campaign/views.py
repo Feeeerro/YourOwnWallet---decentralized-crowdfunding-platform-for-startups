@@ -229,7 +229,7 @@ def judge_reject(request, pk):
         w3.eth.wait_for_transaction_receipt(tx_hash)
 
         # update campaign status to inactive
-        campaign.status = 'inactive'
+        campaign.status = 'rejected'
         campaign.save()
 
         return Response({
@@ -339,7 +339,7 @@ def finalize_campaign(request, pk):
         w3.eth.wait_for_transaction_receipt(tx_hash)
 
         goal_reached = campaign.funded >= Decimal(str(campaign.target))
-        campaign.status = 'completed' if goal_reached else 'inactive'
+        campaign.status = 'completed' if goal_reached else 'failed'
         campaign.save()
 
         return Response({
@@ -398,7 +398,7 @@ def claim_refund(request, pk):
     except Campaign.DoesNotExist:
         return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    if campaign.status != 'inactive':
+    if campaign.status != 'failed':
         return Response({'error': 'Campaign has not failed'}, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the investor has funded this campaign

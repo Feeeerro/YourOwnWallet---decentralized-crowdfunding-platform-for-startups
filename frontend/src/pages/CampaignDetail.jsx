@@ -23,6 +23,26 @@ export default function CampaignDetail() {
     const [refundLoading, setRefundLoading] = useState(false);
     const [refundMessage, setRefundMessage] = useState('');
 
+    const getBadgeStyle = (status) => ({
+        padding: '0.25rem 0.75rem',
+        borderRadius: '999px',
+        fontSize: '0.8rem',
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap',
+        background: status === 'active' ? '#d1fae5'
+                : status === 'pending' ? '#fef3c7'
+                : status === 'completed' ? '#dbeafe'
+                : status === 'failed' ? '#fee2e2'
+                : status === 'rejected' ? '#f3f4f6'
+                : '#f3f4f6',
+        color: status === 'active' ? '#065f46'
+            : status === 'pending' ? '#92400e'
+            : status === 'completed' ? '#1e40af'
+            : status === 'failed' ? '#991b1b'
+            : status === 'rejected' ? '#374151'
+            : '#374151',
+    });
+
     const fetchData = async () => {
         try {
             const [campaignRes, transactionsRes] = await Promise.all([
@@ -200,11 +220,7 @@ export default function CampaignDetail() {
                         {' · '} Created by {campaign.created_by}
                     </p>
                 </div>
-                <span style={{
-                    ...styles.badge,
-                    background: campaign.status === 'active' ? '#d1fae5' : campaign.status === 'pending' ? '#fef3c7' : '#f3f4f6',
-                    color: campaign.status === 'active' ? '#065f46' : campaign.status === 'pending' ? '#92400e' : '#374151',
-                }}>
+                <span style={getBadgeStyle(campaign.status)}>
                     {campaign.status}
                 </span>
             </div>
@@ -297,7 +313,7 @@ export default function CampaignDetail() {
             )}
 
             {/* Refund section — investors after failure */}
-            {user && user.role === 'investor' && campaign.status === 'inactive' && (
+            {user && user.role === 'investor' && campaign.status === 'failed' && (
                 <div style={styles.card}>
                     <h2 style={styles.sectionTitle}>Claim Refund</h2>
                     <p style={styles.meta}>

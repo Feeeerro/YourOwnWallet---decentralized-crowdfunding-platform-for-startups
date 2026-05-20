@@ -5,10 +5,11 @@ from startup.models import Startup
 class Campaign(models.Model):
 
     STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
         ('pending', 'Pending'),
+        ('active', 'Active'),
         ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('rejected', 'Rejected'),
     ]
 
     campaign_name             = models.CharField(max_length=255)

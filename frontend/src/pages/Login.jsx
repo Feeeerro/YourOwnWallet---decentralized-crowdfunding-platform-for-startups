@@ -8,7 +8,7 @@ export default function Login() {
 
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError]       = useState('');
-    const [loading, setLoading]   = useState(false);
+    const [loading, setLoading]   = useState(false);     /* Handle API calls to avoid accidentally double calls */
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

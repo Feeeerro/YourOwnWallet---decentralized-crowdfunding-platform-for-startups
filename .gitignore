@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+check_all_balances.py
+test_finalize.py
 
 # Django
 *.log

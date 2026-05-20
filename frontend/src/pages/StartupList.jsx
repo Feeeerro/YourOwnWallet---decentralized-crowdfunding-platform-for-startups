@@ -45,149 +45,120 @@ export default function StartupList() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    if (loading) return <p style={styles.center}>Loading...</p>;
-    if (error) return <p style={styles.center}>{error}</p>;
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Loading startups...</p>
+            </div>
+        );
+
+    if (error)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-red-500">{error}</p>
+            </div>
+        );
 
     return (
-        <div style={styles.container}>
-            <h1 style={styles.title}>Startups</h1>
-
-            {/* Filters */}
-            <div style={styles.filters}>
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    style={styles.select}
-                >
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-
-                <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    style={styles.select}
-                >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                            {cat}
-                        </option>
-                    ))}
-                </select>
-
-                {(statusFilter || categoryFilter) && (
-                    <button onClick={handleReset} style={styles.resetButton}>
-                        Reset filters
-                    </button>
-                )}
-
-                <span style={styles.count}>
-                    {filtered.length} of {startups.length} startups
-                </span>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    <h1 className="text-4xl font-bold mb-2">Startups</h1>
+                    <p className="text-gray-400">
+                        Discover innovative startups looking for investment
+                    </p>
+                </div>
             </div>
 
-            {/* Startup list */}
-            {filtered.length === 0 ? (
-                <p style={styles.center}>No startups match your filters.</p>
-            ) : (
-                <>
-                    <div style={styles.grid}>
-                        {paginated.map((startup) => (
-                            <Link
-                                to={`/startups/${startup.id}`}
-                                key={startup.id}
-                                style={styles.card}
-                            >
-                                <h2 style={styles.cardTitle}>{startup.startup_name}</h2>
-                                <p style={styles.cardMeta}>
-                                    {startup.category} · {startup.country}
-                                </p>
-                                <p style={styles.cardDescription}>{startup.description}</p>
-                                <span
-                                    style={{
-                                        ...styles.badge,
-                                        background:
-                                            startup.status === 'active' ? '#d1fae5' : '#fef3c7',
-                                        color: startup.status === 'active' ? '#065f46' : '#92400e',
-                                    }}
-                                >
-                                    {startup.status}
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                {/* Filters */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 flex flex-wrap gap-4 items-center">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
 
-                    <Pagination
-                        currentPage={currentPage}
-                        totalItems={filtered.length}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={setCurrentPage}
-                    />
-                </>
-            )}
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+
+                    {(statusFilter || categoryFilter) && (
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+                        >
+                            Reset filters
+                        </button>
+                    )}
+
+                    <span className="ml-auto text-sm text-gray-500">
+                        {filtered.length} of {startups.length} startups
+                    </span>
+                </div>
+
+                {/* Grid */}
+                {filtered.length === 0 ? (
+                    <div className="text-center py-20">
+                        <p className="text-gray-500">No startups match your filters.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {paginated.map((startup) => (
+                                <Link
+                                    to={`/startups/${startup.id}`}
+                                    key={startup.id}
+                                    className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-indigo-200 transition-all group"
+                                >
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h2 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                            {startup.startup_name}
+                                        </h2>
+                                        <span
+                                            className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                                                startup.status === 'active'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-amber-100 text-amber-700'
+                                            }`}
+                                        >
+                                            {startup.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-indigo-600 font-medium mb-2">
+                                        {startup.category} · {startup.country}
+                                    </p>
+                                    <p className="text-sm text-gray-500 line-clamp-3">
+                                        {startup.description}
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Pagination
+                            currentPage={currentPage}
+                            totalItems={filtered.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            onPageChange={setCurrentPage}
+                        />
+                    </>
+                )}
+            </div>
         </div>
     );
 }
-
-const styles = {
-    container: { padding: '2rem', maxWidth: '1200px', margin: '0 auto' },
-    title: { marginBottom: '1.5rem', color: '#1e1b4b' },
-    filters: {
-        display: 'flex',
-        gap: '1rem',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        flexWrap: 'wrap',
-    },
-    select: {
-        padding: '0.5rem 1rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        fontSize: '0.95rem',
-        cursor: 'pointer',
-    },
-    resetButton: {
-        padding: '0.5rem 1rem',
-        background: '#f3f4f6',
-        border: '1px solid #ccc',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '0.95rem',
-    },
-    count: { color: '#666', fontSize: '0.9rem', marginLeft: 'auto' },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-        gap: '1.5rem',
-    },
-    card: {
-        background: '#fff',
-        padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-    },
-    cardTitle: { marginBottom: '0.5rem', color: '#1e1b4b' },
-    cardMeta: { color: '#666', fontSize: '0.9rem', marginBottom: '0.75rem' },
-    cardDescription: {
-        color: '#444',
-        fontSize: '0.95rem',
-        marginBottom: '1rem',
-        display: '-webkit-box',
-        WebkitLineClamp: 3,
-        WebkitBoxOrient: 'vertical',
-        overflow: 'hidden',
-    },
-    badge: {
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-    },
-    center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
-};

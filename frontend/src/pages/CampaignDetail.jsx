@@ -18,48 +18,33 @@ export default function CampaignDetail() {
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveMessage, setApproveMessage] = useState('');
     const [judgeVoted, setJudgeVoted] = useState(false);
-    const [showApproveConfirm, setShowApproveConfirm] = useState(false);
-    const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [withdrawMessage, setWithdrawMessage] = useState('');
     const [refundLoading, setRefundLoading] = useState(false);
     const [refundMessage, setRefundMessage] = useState('');
     const [withdrawn, setWithdrawn] = useState(false);
     const [refunded, setRefunded] = useState(false);
+    const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+    const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
     const [showRefundConfirm, setShowRefundConfirm] = useState(false);
 
-    const getBadgeStyle = (status) => ({
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-        background:
-            status === 'active'
-                ? '#d1fae5'
-                : status === 'pending'
-                  ? '#fef3c7'
-                  : status === 'completed'
-                    ? '#dbeafe'
-                    : status === 'failed'
-                      ? '#fee2e2'
-                      : status === 'rejected'
-                        ? '#f3f4f6'
-                        : '#f3f4f6',
-        color:
-            status === 'active'
-                ? '#065f46'
-                : status === 'pending'
-                  ? '#92400e'
-                  : status === 'completed'
-                    ? '#1e40af'
-                    : status === 'failed'
-                      ? '#991b1b'
-                      : status === 'rejected'
-                        ? '#374151'
-                        : '#374151',
-    });
+    const getBadgeClass = (status) => {
+        switch (status) {
+            case 'active':
+                return 'bg-emerald-500 text-white';
+            case 'pending':
+                return 'bg-amber-500 text-white';
+            case 'completed':
+                return 'bg-blue-500 text-white';
+            case 'failed':
+                return 'bg-red-500 text-white';
+            case 'rejected':
+                return 'bg-gray-500 text-white';
+            default:
+                return 'bg-gray-500 text-white';
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -72,29 +57,24 @@ export default function CampaignDetail() {
             setCampaign(campaignData);
             setTransactions(transactionsRes.data);
 
-            // check if the current judge has already voted
             if (user && user.role === 'judge' && campaignData.status === 'pending') {
                 try {
-                    const w3Response = await api.get(`/campaign/${id}/judge-status/`);
-                    setJudgeVoted(w3Response.data.has_voted);
+                    const judgeRes = await api.get(`/campaign/${id}/judge-status/`);
+                    setJudgeVoted(judgeRes.data.has_voted);
                 } catch {
-                    // if endpoint fails, default to not voted
                     setJudgeVoted(false);
                 }
             }
 
-            // auto-finalize if deadline passed and campaign is still active
             if (campaignData.status === 'active') {
                 const now = new Date();
                 const deadline = new Date(campaignData.deadline);
                 if (now >= deadline) {
                     try {
                         await api.post(`/campaign/${id}/finalize/`);
-                        // refresh after finalization
                         const updated = await api.get(`/campaign/${id}/`);
                         setCampaign(updated.data);
                     } catch (err) {
-                        // finalization might fail if already finalized — ignore silently
                         console.log('Auto-finalize:', err.response?.data?.error);
                     }
                 }
@@ -123,15 +103,13 @@ export default function CampaignDetail() {
         } catch (err) {
             const data = err.response?.data;
             if (data?.error) {
-                if (data.error.includes('Campaign is not active')) {
+                if (data.error.includes('Campaign is not active'))
                     setFundError('This campaign is not active yet.');
-                } else if (data.error.includes('deadline')) {
+                else if (data.error.includes('deadline'))
                     setFundError('This campaign has passed its deadline.');
-                } else if (data.error.includes('Cannot connect')) {
+                else if (data.error.includes('Cannot connect'))
                     setFundError('Cannot connect to the blockchain. Make sure Ganache is running.');
-                } else {
-                    setFundError(data.error);
-                }
+                else setFundError(data.error);
             } else {
                 setFundError('Funding failed. Please try again.');
             }
@@ -152,13 +130,11 @@ export default function CampaignDetail() {
             const data = err.response?.data;
             if (data?.error) {
                 if (data.error.includes('Already approved')) {
-                    setApproveMessage('✗ You have already approved this campaign.');
+                    setApproveMessage('✓ You have already approved this campaign.');
                     setJudgeVoted(true);
-                } else if (data.error.includes('not pending')) {
+                } else if (data.error.includes('not pending'))
                     setApproveMessage('✗ This campaign is no longer pending.');
-                } else {
-                    setApproveMessage(`✗ ${data.error}`);
-                }
+                else setApproveMessage(`✗ ${data.error}`);
             } else {
                 setApproveMessage('✗ Approval failed. Please try again.');
             }
@@ -178,13 +154,11 @@ export default function CampaignDetail() {
         } catch (err) {
             const data = err.response?.data;
             if (data?.error) {
-                if (data.error.includes('Already rejected')) {
+                if (data.error.includes('Already rejected'))
                     setApproveMessage('✗ This campaign has already been rejected.');
-                } else if (data.error.includes('not pending')) {
+                else if (data.error.includes('not pending'))
                     setApproveMessage('✗ This campaign is no longer pending.');
-                } else {
-                    setApproveMessage(`✗ ${data.error}`);
-                }
+                else setApproveMessage(`✗ ${data.error}`);
             } else {
                 setApproveMessage('✗ Rejection failed. Please try again.');
             }
@@ -199,7 +173,7 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/withdraw/`);
             setWithdrawMessage(`✓ ${res.data.message}`);
-            setWithdrawn(true); // ← add this
+            setWithdrawn(true);
             fetchData();
         } catch (err) {
             setWithdrawMessage(`✗ ${err.response?.data?.error || 'Withdrawal failed'}`);
@@ -214,7 +188,7 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/refund/`);
             setRefundMessage(`✓ ${res.data.message}`);
-            setRefunded(true); // ← add this
+            setRefunded(true);
             fetchData();
         } catch (err) {
             setRefundMessage(`✗ ${err.response?.data?.error || 'Refund failed'}`);
@@ -223,218 +197,173 @@ export default function CampaignDetail() {
         }
     };
 
-    if (loading) return <p style={styles.center}>Loading...</p>;
-    if (error) return <p style={styles.center}>{error}</p>;
-    if (!campaign) return <p style={styles.center}>Campaign not found.</p>;
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Loading...</p>
+            </div>
+        );
+    if (error)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-red-500">{error}</p>
+            </div>
+        );
+    if (!campaign)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Campaign not found.</p>
+            </div>
+        );
 
     const progress = Math.min((campaign.funded / campaign.target) * 100, 100);
+    const isOwner =
+        user && campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})`;
 
     return (
-        <div style={styles.container}>
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div style={styles.header}>
-                <div>
-                    <h1 style={styles.title}>{campaign.campaign_name}</h1>
-                    <p style={styles.meta}>
-                        By{' '}
-                        <Link to={`/startups/${campaign.startup}`} style={styles.link}>
-                            {campaign.startup_name}
-                        </Link>
-                        {' · '} Created by {campaign.created_by}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-4xl mx-auto px-6 py-12">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-4xl font-bold mb-2">{campaign.campaign_name}</h1>
+                            <p className="text-gray-400 text-sm">
+                                By{' '}
+                                <Link
+                                    to={`/startups/${campaign.startup}`}
+                                    className="text-indigo-400 hover:text-indigo-300"
+                                >
+                                    {campaign.startup_name}
+                                </Link>
+                                {' · '}Created by {campaign.created_by}
+                            </p>
+                        </div>
+                        <span
+                            className={`text-xs font-medium px-3 py-1.5 rounded-full ${getBadgeClass(campaign.status)}`}
+                        >
+                            {campaign.status}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                {/* About */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-3">About</h2>
+                    <p className="text-gray-600 leading-relaxed mb-4">{campaign.description}</p>
+                    <p className="text-sm text-gray-500">
+                        Deadline:{' '}
+                        <span className="font-medium text-gray-700">
+                            {new Date(campaign.deadline).toLocaleDateString()}
+                        </span>
                     </p>
                 </div>
-                <span style={getBadgeStyle(campaign.status)}>{campaign.status}</span>
-            </div>
 
-            {/* Description */}
-            <div style={styles.card}>
-                <h2 style={styles.sectionTitle}>About</h2>
-                <p style={styles.description}>{campaign.description}</p>
-                <p style={styles.meta}>
-                    Deadline: {new Date(campaign.deadline).toLocaleDateString()}
-                </p>
-            </div>
-
-            {/* Funding progress */}
-            <div style={styles.card}>
-                <h2 style={styles.sectionTitle}>Funding Progress</h2>
-                <div style={styles.progressBar}>
-                    <div style={{ ...styles.progressFill, width: `${progress}%` }} />
-                </div>
-                <div style={styles.fundingStats}>
-                    <span>
-                        <strong>{campaign.funded} ETH</strong> raised
-                    </span>
-                    <span>
-                        <strong>{progress.toFixed(1)}%</strong>
-                    </span>
-                    <span>
-                        Goal: <strong>{campaign.target} ETH</strong>
-                    </span>
-                </div>
-            </div>
-
-            {/* Judge approval section */}
-            {user && user.role === 'judge' && campaign.status === 'pending' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>Judge Actions</h2>
-                    {judgeVoted ? (
-                        <p style={styles.message}>✓ Your vote has been recorded.</p>
-                    ) : (
-                        <>
-                            <p style={styles.meta}>
-                                As a judge you can approve or reject this campaign.
-                            </p>
-                            {approveMessage && <p style={styles.message}>{approveMessage}</p>}
-
-                            {/* No confirmation shown yet */}
-                            {!showApproveConfirm && !showRejectConfirm && (
-                                <div style={styles.judgeButtons}>
-                                    <button
-                                        onClick={() => setShowApproveConfirm(true)}
-                                        style={styles.approveButton}
-                                    >
-                                        ✓ Approve
-                                    </button>
-                                    <button
-                                        onClick={() => setShowRejectConfirm(true)}
-                                        style={styles.rejectButton}
-                                    >
-                                        ✗ Reject
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Approve confirmation */}
-                            {showApproveConfirm && (
-                                <div style={styles.confirmBox}>
-                                    <p style={styles.confirmText}>
-                                        Are you sure you want to <strong>approve</strong> this
-                                        campaign? This action cannot be undone.
-                                    </p>
-                                    <div style={styles.confirmButtons}>
-                                        <button
-                                            onClick={() => {
-                                                setShowApproveConfirm(false);
-                                                handleApprove();
-                                            }}
-                                            disabled={approveLoading}
-                                            style={styles.approveButton}
-                                        >
-                                            {approveLoading ? 'Processing...' : 'Yes, approve'}
-                                        </button>
-                                        <button
-                                            onClick={() => setShowApproveConfirm(false)}
-                                            style={styles.cancelButton}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Reject confirmation */}
-                            {showRejectConfirm && (
-                                <div style={{ ...styles.confirmBox, background: '#fee2e2' }}>
-                                    <p style={{ ...styles.confirmText, color: '#991b1b' }}>
-                                        Are you sure you want to <strong>reject</strong> this
-                                        campaign? This action cannot be undone.
-                                    </p>
-                                    <div style={styles.confirmButtons}>
-                                        <button
-                                            onClick={() => {
-                                                setShowRejectConfirm(false);
-                                                handleReject();
-                                            }}
-                                            disabled={approveLoading}
-                                            style={styles.rejectButton}
-                                        >
-                                            {approveLoading ? 'Processing...' : 'Yes, reject'}
-                                        </button>
-                                        <button
-                                            onClick={() => setShowRejectConfirm(false)}
-                                            style={styles.cancelButton}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* Funding section */}
-            {user &&
-                user.role === 'investor' &&
-                campaign.status === 'active' &&
-                campaign.created_by !== `${user.first_name} ${user.last_name} (${user.email})` && (
-                    <div style={styles.card}>
-                        <h2 style={styles.sectionTitle}>Fund this Campaign</h2>
-                        {fundError && <p style={styles.error}>{fundError}</p>}
-                        {fundSuccess && <p style={styles.success}>{fundSuccess}</p>}
-                        <form onSubmit={handleFund} style={styles.fundForm}>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                placeholder="Amount in ETH"
-                                value={fundAmount}
-                                onChange={(e) => setFundAmount(e.target.value)}
-                                style={styles.input}
-                                required
-                            />
-                            <button type="submit" style={styles.fundButton} disabled={fundLoading}>
-                                {fundLoading ? 'Processing...' : 'Fund Now'}
-                            </button>
-                        </form>
+                {/* Funding progress */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Funding Progress</h2>
+                    <div className="bg-gray-100 rounded-full h-3 mb-4">
+                        <div
+                            className="bg-indigo-600 h-3 rounded-full transition-all"
+                            style={{ width: `${progress}%` }}
+                        />
                     </div>
-                )}
+                    <div className="flex justify-between text-sm">
+                        <span className="text-gray-700">
+                            <strong className="text-gray-900">{campaign.funded} ETH</strong> raised
+                        </span>
+                        <span className="text-indigo-600 font-semibold">
+                            {progress.toFixed(1)}%
+                        </span>
+                        <span className="text-gray-700">
+                            Goal: <strong className="text-gray-900">{campaign.target} ETH</strong>
+                        </span>
+                    </div>
+                </div>
 
-            {/* Withdraw section — owner after success */}
-            {user &&
-                campaign.status === 'completed' &&
-                campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
-                    <div style={styles.card}>
-                        <h2 style={styles.sectionTitle}>Withdraw Funds</h2>
-                        {withdrawn ? (
-                            <p style={styles.success}>✓ Funds successfully withdrawn.</p>
+                {/* Judge approval section */}
+                {user && user.role === 'judge' && campaign.status === 'pending' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Judge Actions</h2>
+                        {judgeVoted ? (
+                            <p className="text-emerald-600 font-medium">
+                                ✓ Your vote has been recorded.
+                            </p>
                         ) : (
                             <>
-                                <p style={styles.meta}>
-                                    Your campaign succeeded! You can now withdraw{' '}
-                                    <strong>{campaign.funded} ETH</strong>.
+                                <p className="text-gray-500 text-sm mb-4">
+                                    As a judge you can approve or reject this campaign.
                                 </p>
-                                {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
+                                {approveMessage && (
+                                    <p className="text-indigo-600 text-sm mb-4">{approveMessage}</p>
+                                )}
 
-                                {!showWithdrawConfirm ? (
-                                    <button
-                                        onClick={() => setShowWithdrawConfirm(true)}
-                                        style={styles.approveButton}
-                                    >
-                                        Withdraw {campaign.funded} ETH
-                                    </button>
-                                ) : (
-                                    <div style={styles.confirmBox}>
-                                        <p style={styles.confirmText}>
-                                            Are you sure you want to withdraw{' '}
-                                            <strong>{campaign.funded} ETH</strong>? This action
-                                            cannot be undone.
+                                {!showApproveConfirm && !showRejectConfirm && (
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setShowApproveConfirm(true)}
+                                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+                                        >
+                                            ✓ Approve
+                                        </button>
+                                        <button
+                                            onClick={() => setShowRejectConfirm(true)}
+                                            className="bg-red-600 hover:bg-red-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+                                        >
+                                            ✗ Reject
+                                        </button>
+                                    </div>
+                                )}
+
+                                {showApproveConfirm && (
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                                        <p className="text-emerald-800 text-sm mb-3">
+                                            Are you sure you want to <strong>approve</strong> this
+                                            campaign? This action cannot be undone.
                                         </p>
-                                        <div style={styles.confirmButtons}>
+                                        <div className="flex gap-3">
                                             <button
-                                                onClick={handleWithdraw}
-                                                disabled={withdrawLoading}
-                                                style={styles.approveButton}
+                                                onClick={() => {
+                                                    setShowApproveConfirm(false);
+                                                    handleApprove();
+                                                }}
+                                                disabled={approveLoading}
+                                                className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-300 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
                                             >
-                                                {withdrawLoading
-                                                    ? 'Processing...'
-                                                    : 'Yes, withdraw'}
+                                                {approveLoading ? 'Processing...' : 'Yes, approve'}
                                             </button>
                                             <button
-                                                onClick={() => setShowWithdrawConfirm(false)}
-                                                style={styles.cancelButton}
+                                                onClick={() => setShowApproveConfirm(false)}
+                                                className="border border-gray-300 text-gray-600 hover:border-gray-400 px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {showRejectConfirm && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <p className="text-red-800 text-sm mb-3">
+                                            Are you sure you want to <strong>reject</strong> this
+                                            campaign? This action cannot be undone.
+                                        </p>
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    setShowRejectConfirm(false);
+                                                    handleReject();
+                                                }}
+                                                disabled={approveLoading}
+                                                className="bg-red-600 hover:bg-red-500 disabled:bg-red-300 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                {approveLoading ? 'Processing...' : 'Yes, reject'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowRejectConfirm(false)}
+                                                className="border border-gray-300 text-gray-600 hover:border-gray-400 px-5 py-2 rounded-lg transition-colors text-sm"
                                             >
                                                 Cancel
                                             </button>
@@ -446,187 +375,187 @@ export default function CampaignDetail() {
                     </div>
                 )}
 
-            {/* Refund section — investors after failure */}
-            {user && user.role === 'investor' && campaign.status === 'failed' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>Claim Refund</h2>
-                    {refunded ? (
-                        <p style={styles.success}>✓ Refund successfully claimed.</p>
-                    ) : (
-                        <>
-                            <p style={styles.meta}>
-                                This campaign did not reach its goal. You can claim a refund.
-                            </p>
-                            {refundMessage && <p style={styles.message}>{refundMessage}</p>}
+                {/* Funding section */}
+                {user && user.role === 'investor' && campaign.status === 'active' && !isOwner && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                            Fund this Campaign
+                        </h2>
+                        {fundError && <p className="text-red-600 text-sm mb-3">{fundError}</p>}
+                        {fundSuccess && (
+                            <p className="text-emerald-600 text-sm mb-3">{fundSuccess}</p>
+                        )}
+                        <form onSubmit={handleFund} className="flex gap-3">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                placeholder="Amount in ETH"
+                                value={fundAmount}
+                                onChange={(e) => setFundAmount(e.target.value)}
+                                required
+                                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <button
+                                type="submit"
+                                disabled={fundLoading}
+                                className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+                            >
+                                {fundLoading ? 'Processing...' : 'Fund Now'}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
-                            {!showRefundConfirm ? (
-                                <button
-                                    onClick={() => setShowRefundConfirm(true)}
-                                    style={styles.rejectButton}
-                                >
-                                    Claim Refund
-                                </button>
-                            ) : (
-                                <div style={styles.confirmBox}>
-                                    <p style={styles.confirmText}>
-                                        Are you sure you want to claim your refund? This action
-                                        cannot be undone.
-                                    </p>
-                                    <div style={styles.confirmButtons}>
-                                        <button
-                                            onClick={handleRefund}
-                                            disabled={refundLoading}
-                                            style={styles.rejectButton}
-                                        >
-                                            {refundLoading ? 'Processing...' : 'Yes, claim refund'}
-                                        </button>
-                                        <button
-                                            onClick={() => setShowRefundConfirm(false)}
-                                            style={styles.cancelButton}
-                                        >
-                                            Cancel
-                                        </button>
+                {/* Withdraw section */}
+                {user && campaign.status === 'completed' && isOwner && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Withdraw Funds</h2>
+                        {withdrawn ? (
+                            <p className="text-emerald-600 font-medium">
+                                ✓ Funds successfully withdrawn.
+                            </p>
+                        ) : (
+                            <>
+                                <p className="text-gray-500 text-sm mb-4">
+                                    Your campaign succeeded! You can now withdraw{' '}
+                                    <strong className="text-gray-900">{campaign.funded} ETH</strong>
+                                    .
+                                </p>
+                                {withdrawMessage && (
+                                    <p className="text-sm mb-3">{withdrawMessage}</p>
+                                )}
+                                {!showWithdrawConfirm ? (
+                                    <button
+                                        onClick={() => setShowWithdrawConfirm(true)}
+                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+                                    >
+                                        Withdraw {campaign.funded} ETH
+                                    </button>
+                                ) : (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                        <p className="text-amber-800 text-sm mb-3">
+                                            Are you sure you want to withdraw{' '}
+                                            <strong>{campaign.funded} ETH</strong>? This action
+                                            cannot be undone.
+                                        </p>
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={handleWithdraw}
+                                                disabled={withdrawLoading}
+                                                className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-300 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                {withdrawLoading
+                                                    ? 'Processing...'
+                                                    : 'Yes, withdraw'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowWithdrawConfirm(false)}
+                                                className="border border-gray-300 text-gray-600 hover:border-gray-400 px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {/* Refund section */}
+                {user && user.role === 'investor' && campaign.status === 'failed' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Claim Refund</h2>
+                        {refunded ? (
+                            <p className="text-emerald-600 font-medium">
+                                ✓ Refund successfully claimed.
+                            </p>
+                        ) : (
+                            <>
+                                <p className="text-gray-500 text-sm mb-4">
+                                    This campaign did not reach its goal. You can claim a refund.
+                                </p>
+                                {refundMessage && <p className="text-sm mb-3">{refundMessage}</p>}
+                                {!showRefundConfirm ? (
+                                    <button
+                                        onClick={() => setShowRefundConfirm(true)}
+                                        className="bg-red-600 hover:bg-red-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+                                    >
+                                        Claim Refund
+                                    </button>
+                                ) : (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <p className="text-red-800 text-sm mb-3">
+                                            Are you sure you want to claim your refund? This action
+                                            cannot be undone.
+                                        </p>
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={handleRefund}
+                                                disabled={refundLoading}
+                                                className="bg-red-600 hover:bg-red-500 disabled:bg-red-300 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                {refundLoading
+                                                    ? 'Processing...'
+                                                    : 'Yes, claim refund'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowRefundConfirm(false)}
+                                                className="border border-gray-300 text-gray-600 hover:border-gray-400 px-5 py-2 rounded-lg transition-colors text-sm"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {/* Transaction history */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Transaction History ({transactions.length})
+                    </h2>
+                    {transactions.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No transactions yet.</p>
+                    ) : (
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-gray-100">
+                                    <th className="text-left py-3 text-gray-500 font-medium">
+                                        Investor
+                                    </th>
+                                    <th className="text-left py-3 text-gray-500 font-medium">
+                                        Amount
+                                    </th>
+                                    <th className="text-left py-3 text-gray-500 font-medium">
+                                        Date
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((tx) => (
+                                    <tr
+                                        key={tx.id}
+                                        className="border-b border-gray-50 hover:bg-gray-50"
+                                    >
+                                        <td className="py-3 text-gray-700">{tx.sender}</td>
+                                        <td className="py-3 text-gray-700 font-medium">
+                                            {tx.amount} ETH
+                                        </td>
+                                        <td className="py-3 text-gray-500">
+                                            {new Date(tx.date).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
                 </div>
-            )}
-
-            {/* Transaction history */}
-            <div style={styles.card}>
-                <h2 style={styles.sectionTitle}>Transaction History ({transactions.length})</h2>
-                {transactions.length === 0 ? (
-                    <p style={styles.empty}>No transactions yet.</p>
-                ) : (
-                    <table style={styles.table}>
-                        <thead>
-                            <tr>
-                                <th style={styles.th}>Investor</th>
-                                <th style={styles.th}>Amount</th>
-                                <th style={styles.th}>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {transactions.map((tx) => (
-                                <tr key={tx.id}>
-                                    <td style={styles.td}>{tx.sender}</td>
-                                    <td style={styles.td}>{tx.amount} ETH</td>
-                                    <td style={styles.td}>{new Date(tx.date).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { padding: '2rem', maxWidth: '900px', margin: '0 auto' },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '2rem',
-    },
-    title: { color: '#1e1b4b', marginBottom: '0.5rem' },
-    meta: { color: '#666', fontSize: '0.95rem' },
-    badge: {
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.9rem',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-    },
-    card: {
-        background: '#fff',
-        padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        marginBottom: '1.5rem',
-    },
-    sectionTitle: { color: '#1e1b4b', marginBottom: '1rem' },
-    description: { color: '#444', lineHeight: '1.6', marginBottom: '1rem' },
-    link: { color: '#4f46e5', textDecoration: 'none' },
-    progressBar: {
-        background: '#e5e7eb',
-        borderRadius: '999px',
-        height: '12px',
-        marginBottom: '1rem',
-    },
-    progressFill: {
-        background: '#4f46e5',
-        height: '100%',
-        borderRadius: '999px',
-        transition: 'width 0.3s',
-    },
-    fundingStats: { display: 'flex', justifyContent: 'space-between', color: '#444' },
-    judgeButtons: { display: 'flex', gap: '1rem', marginTop: '1rem' },
-    approveButton: {
-        padding: '0.75rem 2rem',
-        background: '#059669',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        fontWeight: 'bold',
-    },
-    rejectButton: {
-        padding: '0.75rem 2rem',
-        background: '#dc2626',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        fontWeight: 'bold',
-    },
-    fundForm: { display: 'flex', gap: '1rem', marginTop: '1rem' },
-    input: {
-        padding: '0.75rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        fontSize: '1rem',
-        flex: 1,
-    },
-    fundButton: {
-        padding: '0.75rem 2rem',
-        background: '#4f46e5',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        fontWeight: 'bold',
-    },
-    message: { color: '#4f46e5', marginBottom: '1rem' },
-    error: { color: '#dc2626', marginBottom: '1rem' },
-    success: { color: '#059669', marginBottom: '1rem' },
-    empty: { color: '#666' },
-    table: { width: '100%', borderCollapse: 'collapse' },
-    th: {
-        textAlign: 'left',
-        padding: '0.75rem',
-        borderBottom: '2px solid #e5e7eb',
-        color: '#1e1b4b',
-    },
-    td: { padding: '0.75rem', borderBottom: '1px solid #e5e7eb', color: '#444' },
-    center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
-    confirmBox: { background: '#fef3c7', padding: '1rem', borderRadius: '6px', marginTop: '1rem' },
-    confirmText: { color: '#92400e', marginBottom: '1rem' },
-    confirmButtons: { display: 'flex', gap: '1rem' },
-    cancelButton: {
-        padding: '0.75rem 2rem',
-        background: '#f3f4f6',
-        color: '#374151',
-        border: '1px solid #ccc',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        fontWeight: 'bold',
-    },
-};

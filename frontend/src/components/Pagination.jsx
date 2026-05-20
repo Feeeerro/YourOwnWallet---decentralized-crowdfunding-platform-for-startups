@@ -6,11 +6,11 @@ export default function Pagination({ currentPage, totalItems, itemsPerPage, onPa
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
     return (
-        <div style={styles.container}>
+        <div className="flex justify-center items-center gap-2 mt-10">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                style={{ ...styles.button, ...(currentPage === 1 ? styles.disabled : {}) }}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:border-indigo-400 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
                 ← Prev
             </button>
@@ -19,10 +19,11 @@ export default function Pagination({ currentPage, totalItems, itemsPerPage, onPa
                 <button
                     key={page}
                     onClick={() => onPageChange(page)}
-                    style={{
-                        ...styles.button,
-                        ...(page === currentPage ? styles.active : {}),
-                    }}
+                    className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
+                        page === currentPage
+                            ? 'bg-indigo-600 text-white border-indigo-600 font-semibold'
+                            : 'border-gray-300 text-gray-600 hover:border-indigo-400 hover:text-indigo-600'
+                    }`}
                 >
                     {page}
                 </button>
@@ -31,39 +32,10 @@ export default function Pagination({ currentPage, totalItems, itemsPerPage, onPa
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                style={{ ...styles.button, ...(currentPage === totalPages ? styles.disabled : {}) }}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:border-indigo-400 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
                 Next →
             </button>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '0.5rem',
-        marginTop: '2rem',
-    },
-    button: {
-        padding: '0.5rem 0.75rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        background: '#fff',
-        cursor: 'pointer',
-        fontSize: '0.9rem',
-        color: '#4f46e5',
-    },
-    active: {
-        background: '#4f46e5',
-        color: '#fff',
-        border: '1px solid #4f46e5',
-        fontWeight: 'bold',
-    },
-    disabled: {
-        color: '#ccc',
-        cursor: 'not-allowed',
-    },
-};

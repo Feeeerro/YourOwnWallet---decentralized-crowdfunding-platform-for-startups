@@ -8,8 +8,7 @@ export default function Login() {
 
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
-    const [loading, setLoading] =
-        useState(false); /* Handle API calls to avoid accidentally double calls */
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,7 +21,7 @@ export default function Login() {
         try {
             await login(formData.username, formData.password);
             navigate('/');
-        } catch (err) {
+        } catch {
             setError('Invalid username or password');
         } finally {
             setLoading(false);
@@ -30,75 +29,68 @@ export default function Login() {
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h2 style={styles.title}>Login</h2>
-                {error && <p style={styles.error}>{error}</p>}
-                <form onSubmit={handleSubmit} autoComplete="off">
-                    <div style={styles.field}>
-                        <label>Username</label>
-                        <input
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            style={styles.input}
-                            autoComplete="username"
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            style={styles.input}
-                            autoComplete="current-password"
-                            required
-                        />
-                    </div>
-                    <button type="submit" style={styles.button} disabled={loading}>
-                        {loading ? 'Logging in...' : 'Login'}
-                    </button>
-                </form>
-                <p style={styles.link}>
-                    Don't have an account? <Link to="/register">Register</Link>
-                </p>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
+                    <p className="text-gray-500 mt-2">Sign in to your account</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Username
+                            </label>
+                            <input
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                autoComplete="username"
+                                required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                autoComplete="current-password"
+                                required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                        >
+                            {loading ? 'Signing in...' : 'Sign in'}
+                        </button>
+                    </form>
+
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        Don't have an account?{' '}
+                        <Link
+                            to="/register"
+                            className="text-indigo-600 hover:text-indigo-500 font-medium"
+                        >
+                            Register
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '80vh',
-    },
-    card: {
-        background: '#fff',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '400px',
-    },
-    title: { marginBottom: '1.5rem', textAlign: 'center' },
-    field: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px' },
-    input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
-    button: {
-        width: '100%',
-        padding: '0.75rem',
-        background: '#4f46e5',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        marginTop: '1rem',
-    },
-    error: { color: 'red', marginBottom: '1rem', textAlign: 'center' },
-    link: { textAlign: 'center', marginTop: '1rem' },
-};

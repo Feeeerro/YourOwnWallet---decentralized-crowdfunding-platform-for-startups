@@ -11,67 +11,61 @@ export default function Navbar() {
     };
 
     return (
-        <nav style={styles.nav}>
-            <Link to="/" style={styles.brand}>
-                YourOwnWallet
-            </Link>
-            <div style={styles.links}>
-                <Link to="/startups" style={styles.link}>
-                    Startups
+        <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                {/* Brand */}
+                <Link to="/" className="text-white font-bold text-xl tracking-tight">
+                    YourOwn<span className="text-indigo-400">Wallet</span>
                 </Link>
-                <Link to="/campaigns" style={styles.link}>
-                    Campaigns
-                </Link>
-                {user ? (
-                    <>
-                        <Link to="/account" style={styles.link}>
-                            My Account
-                        </Link>
-                        <button onClick={handleLogout} style={styles.button}>
-                            Logout
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login" style={styles.link}>
-                            Login
-                        </Link>
-                        <Link to="/register" style={styles.linkButton}>
-                            Register
-                        </Link>
-                    </>
-                )}
+
+                {/* Navigation links */}
+                <div className="flex items-center gap-8">
+                    <Link
+                        to="/startups"
+                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                    >
+                        Startups
+                    </Link>
+                    <Link
+                        to="/campaigns"
+                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                    >
+                        Campaigns
+                    </Link>
+
+                    {user ? (
+                        <>
+                            <Link
+                                to="/account"
+                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                            >
+                                My Account
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="text-sm font-medium text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 px-4 py-2 rounded-lg transition-all"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                to="/login"
+                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                            >
+                                Login
+                            </Link>
+                            <Link
+                                to="/register"
+                                className="text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors"
+                            >
+                                Register
+                            </Link>
+                        </>
+                    )}
+                </div>
             </div>
         </nav>
     );
 }
-
-const styles = {
-    nav: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '1rem 2rem',
-        background: '#4f46e5',
-        color: '#fff',
-    },
-    brand: { color: '#fff', textDecoration: 'none', fontSize: '1.25rem', fontWeight: 'bold' },
-    links: { display: 'flex', alignItems: 'center', gap: '1.5rem' },
-    link: { color: '#fff', textDecoration: 'none' },
-    linkButton: {
-        textDecoration: 'none',
-        background: '#fff',
-        color: '#4f46e5',
-        padding: '0.4rem 1rem',
-        borderRadius: '4px',
-        fontWeight: 'bold',
-    },
-    button: {
-        background: 'transparent',
-        color: '#fff',
-        border: '1px solid #fff',
-        padding: '0.4rem 1rem',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-};

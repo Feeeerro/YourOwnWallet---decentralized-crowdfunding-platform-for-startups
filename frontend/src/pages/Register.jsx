@@ -35,7 +35,6 @@ export default function Register() {
         } catch (err) {
             const data = err.response?.data;
             if (data) {
-                // collect all field errors into one message
                 const messages = Object.entries(data)
                     .map(([field, errors]) => {
                         const fieldName = field.replace('_', ' ');
@@ -53,167 +52,178 @@ export default function Register() {
     };
 
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h2 style={styles.title}>Register</h2>
-                {error && (
-                    <div style={styles.error}>
-                        {error.split('\n').map((line, i) => (
-                            <p key={i} style={{ margin: '2px 0' }}>
-                                {line}
-                            </p>
-                        ))}
-                    </div>
-                )}
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.row}>
-                        <div style={styles.field}>
-                            <label>First Name</label>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-lg">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Create an account</h1>
+                    <p className="text-gray-500 mt-2">Join the platform today</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                            {error.split('\n').map((line, i) => (
+                                <p key={i} className="mb-1">
+                                    {line}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    First Name
+                                </label>
+                                <input
+                                    name="first_name"
+                                    value={formData.first_name}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Last Name
+                                </label>
+                                <input
+                                    name="last_name"
+                                    value={formData.last_name}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Username
+                            </label>
                             <input
-                                name="first_name"
-                                value={formData.first_name}
+                                name="username"
+                                value={formData.username}
                                 onChange={handleChange}
-                                style={styles.input}
                                 required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
-                        <div style={styles.field}>
-                            <label>Last Name</label>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Email
+                            </label>
                             <input
-                                name="last_name"
-                                value={formData.last_name}
+                                type="email"
+                                name="email"
+                                value={formData.email}
                                 onChange={handleChange}
-                                style={styles.input}
                                 required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                         </div>
-                    </div>
-                    <div style={styles.field}>
-                        <label>Username</label>
-                        <input
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Role</label>
-                        <select
-                            name="role"
-                            value={formData.role}
-                            onChange={handleChange}
-                            style={styles.input}
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Role
+                            </label>
+                            <select
+                                name="role"
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="investor">Investor</option>
+                                <option value="startupper">Startupper</option>
+                                <option value="judge">Judge</option>
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Country
+                                </label>
+                                <input
+                                    name="country"
+                                    value={formData.country}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    City
+                                </label>
+                                <input
+                                    name="city"
+                                    value={formData.city}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Phone
+                            </label>
+                            <input
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Address
+                            </label>
+                            <input
+                                name="address"
+                                value={formData.address}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
                         >
-                            <option value="investor">Investor</option>
-                            <option value="startupper">Startupper</option>
-                            <option value="judge">Judge</option>
-                        </select>
-                    </div>
-                    <div style={styles.row}>
-                        <div style={styles.field}>
-                            <label>Country</label>
-                            <input
-                                name="country"
-                                value={formData.country}
-                                onChange={handleChange}
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.field}>
-                            <label>City</label>
-                            <input
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                style={styles.input}
-                            />
-                        </div>
-                    </div>
-                    <div style={styles.field}>
-                        <label>Phone</label>
-                        <input
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            style={styles.input}
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Address</label>
-                        <input
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            style={styles.input}
-                        />
-                    </div>
-                    <button type="submit" style={styles.button} disabled={loading}>
-                        {loading ? 'Registering...' : 'Register'}
-                    </button>
-                </form>
-                <p style={styles.link}>
-                    Already have an account? <Link to="/login">Login</Link>
-                </p>
+                            {loading ? 'Creating account...' : 'Create account'}
+                        </button>
+                    </form>
+
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        Already have an account?{' '}
+                        <Link
+                            to="/login"
+                            className="text-indigo-600 hover:text-indigo-500 font-medium"
+                        >
+                            Sign in
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '80vh',
-        padding: '2rem 0',
-    },
-    card: {
-        background: '#fff',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '500px',
-    },
-    title: { marginBottom: '1.5rem', textAlign: 'center' },
-    field: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-    row: { display: 'flex', gap: '1rem' },
-    input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
-    button: {
-        width: '100%',
-        padding: '0.75rem',
-        background: '#4f46e5',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        marginTop: '1rem',
-    },
-    error: { color: 'red', marginBottom: '1rem', textAlign: 'center' },
-    link: { textAlign: 'center', marginTop: '1rem' },
-};

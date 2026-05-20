@@ -11,199 +11,158 @@ export default function StartupDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const getBadgeStyle = (status) => ({
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-        background:
-            status === 'active'
-                ? '#d1fae5'
-                : status === 'pending'
-                  ? '#fef3c7'
-                  : status === 'completed'
-                    ? '#dbeafe'
-                    : status === 'failed'
-                      ? '#fee2e2'
-                      : status === 'rejected'
-                        ? '#f3f4f6'
-                        : '#f3f4f6',
-        color:
-            status === 'active'
-                ? '#065f46'
-                : status === 'pending'
-                  ? '#92400e'
-                  : status === 'completed'
-                    ? '#1e40af'
-                    : status === 'failed'
-                      ? '#991b1b'
-                      : status === 'rejected'
-                        ? '#374151'
-                        : '#374151',
-    });
-
     useEffect(() => {
         Promise.all([api.get(`/startup/${id}/`), api.get('/campaign/')])
             .then(([startupRes, campaignsRes]) => {
                 setStartup(startupRes.data);
-                // filter campaigns belonging to this startup
                 setCampaigns(campaignsRes.data.filter((c) => c.startup === parseInt(id)));
             })
             .catch(() => setError('Failed to load startup'))
             .finally(() => setLoading(false));
     }, [id]);
 
-    if (loading) return <p style={styles.center}>Loading...</p>;
-    if (error) return <p style={styles.center}>{error}</p>;
-    if (!startup) return <p style={styles.center}>Startup not found.</p>;
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Loading...</p>
+            </div>
+        );
+    if (error)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-red-500">{error}</p>
+            </div>
+        );
+    if (!startup)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Startup not found.</p>
+            </div>
+        );
+
+    const isOwner =
+        user && startup.created_by === `${user.first_name} ${user.last_name} (${user.email})`;
 
     return (
-        <div style={styles.container}>
+        <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div style={styles.header}>
-                <div>
-                    <h1 style={styles.title}>{startup.startup_name}</h1>
-                    <p style={styles.meta}>
-                        {startup.category} · {startup.country} · {startup.continent}
-                    </p>
-                </div>
-                <span style={getBadgeStyle(startup.status)}>{startup.status}</span>
-                {/* Show create campaign button only to the startup owner */}
-                {user &&
-                    startup.created_by ===
-                        `${user.first_name} ${user.last_name} (${user.email})` && (
-                        <Link to="/campaigns/create" style={styles.createButton}>
-                            + Create Campaign
-                        </Link>
-                    )}
-            </div>
-
-            {/* Details */}
-            <div style={styles.card}>
-                <h2 style={styles.sectionTitle}>About</h2>
-                <p style={styles.description}>{startup.description}</p>
-                <div style={styles.infoGrid}>
-                    <div>
-                        <strong>Address</strong>
-                        <p>{startup.address}</p>
-                    </div>
-                    <div>
-                        <strong>Created by</strong>
-                        <p>{startup.created_by}</p>
-                    </div>
-                    <div>
-                        <strong>Created at</strong>
-                        <p>{new Date(startup.created_at).toLocaleDateString()}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Campaigns */}
-            <div style={styles.card}>
-                <h2 style={styles.sectionTitle}>Campaigns</h2>
-                {campaigns.length === 0 ? (
-                    <p style={styles.empty}>No campaigns for this startup yet.</p>
-                ) : (
-                    <div style={styles.campaignGrid}>
-                        {campaigns.map((campaign) => (
-                            <Link
-                                to={`/campaigns/${campaign.id}`}
-                                key={campaign.id}
-                                style={styles.campaignCard}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-4xl mx-auto px-6 py-12">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-4xl font-bold mb-2">{startup.startup_name}</h1>
+                            <p className="text-gray-400">
+                                {startup.category} · {startup.country} · {startup.continent}
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-3">
+                            <span
+                                className={`text-xs font-medium px-3 py-1.5 rounded-full ${
+                                    startup.status === 'active'
+                                        ? 'bg-emerald-500 text-white'
+                                        : 'bg-amber-500 text-white'
+                                }`}
                             >
-                                <h3 style={styles.campaignTitle}>{campaign.campaign_name}</h3>
-                                <p style={styles.campaignMeta}>
-                                    Target: {campaign.target} ETH · Funded: {campaign.funded} ETH
-                                </p>
-                                <div style={styles.progressBar}>
-                                    <div
-                                        style={{
-                                            ...styles.progressFill,
-                                            width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
-                                        }}
-                                    />
-                                </div>
-                                <p style={styles.campaignMeta}>
-                                    Deadline: {new Date(campaign.deadline).toLocaleDateString()}
-                                </p>
-                            </Link>
-                        ))}
+                                {startup.status}
+                            </span>
+                            {isOwner && (
+                                <Link
+                                    to="/campaigns/create"
+                                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                                >
+                                    + Create Campaign
+                                </Link>
+                            )}
+                        </div>
                     </div>
-                )}
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                {/* About */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
+                    <p className="text-gray-600 leading-relaxed mb-6">{startup.description}</p>
+                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Address
+                            </p>
+                            <p className="text-sm text-gray-700">{startup.address}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Created by
+                            </p>
+                            <p className="text-sm text-gray-700">{startup.created_by}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Created at
+                            </p>
+                            <p className="text-sm text-gray-700">
+                                {new Date(startup.created_at).toLocaleDateString()}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Campaigns */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Campaigns ({campaigns.length})
+                    </h2>
+                    {campaigns.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No campaigns for this startup yet.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {campaigns.map((campaign) => (
+                                <Link
+                                    to={`/campaigns/${campaign.id}`}
+                                    key={campaign.id}
+                                    className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                            {campaign.campaign_name}
+                                        </h3>
+                                        <span
+                                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                                campaign.status === 'active'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : campaign.status === 'completed'
+                                                      ? 'bg-blue-100 text-blue-700'
+                                                      : campaign.status === 'failed'
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                            }`}
+                                        >
+                                            {campaign.status}
+                                        </span>
+                                    </div>
+                                    <div className="bg-gray-100 rounded-full h-1.5 mb-2">
+                                        <div
+                                            className="bg-indigo-600 h-1.5 rounded-full"
+                                            style={{
+                                                width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>
+                                            {campaign.funded} / {campaign.target} ETH
+                                        </span>
+                                        <span>
+                                            Deadline:{' '}
+                                            {new Date(campaign.deadline).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { padding: '2rem', maxWidth: '900px', margin: '0 auto' },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '2rem',
-    },
-    title: { color: '#1e1b4b', marginBottom: '0.5rem' },
-    meta: { color: '#666' },
-    badge: {
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.9rem',
-        fontWeight: 'bold',
-    },
-    card: {
-        background: '#fff',
-        padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        marginBottom: '1.5rem',
-    },
-    sectionTitle: { color: '#1e1b4b', marginBottom: '1rem' },
-    description: { color: '#444', lineHeight: '1.6', marginBottom: '1.5rem' },
-    infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' },
-    empty: { color: '#666' },
-    campaignGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-        gap: '1rem',
-    },
-    campaignCard: {
-        background: '#f8f7ff',
-        padding: '1rem',
-        borderRadius: '6px',
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-    },
-    campaignTitle: { color: '#1e1b4b', marginBottom: '0.5rem' },
-    campaignMeta: { color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem' },
-    progressBar: {
-        background: '#e5e7eb',
-        borderRadius: '999px',
-        height: '8px',
-        marginBottom: '0.5rem',
-    },
-    progressFill: {
-        background: '#4f46e5',
-        height: '100%',
-        borderRadius: '999px',
-        transition: 'width 0.3s',
-    },
-    center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
-    headerRight: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        gap: '0.5rem',
-    },
-    createButton: {
-        background: '#4f46e5',
-        color: '#fff',
-        padding: '0.5rem 1rem',
-        borderRadius: '6px',
-        textDecoration: 'none',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-    },
-};

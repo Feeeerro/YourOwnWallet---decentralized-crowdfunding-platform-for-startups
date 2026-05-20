@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 export default function CreateCampaign() {
-    const { user } = useAuth();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [formData, setFormData] = useState({
         campaign_name: '',
@@ -18,18 +18,15 @@ export default function CreateCampaign() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Load the user's startups to populate the dropdown
     useEffect(() => {
         api.get('/startup/')
             .then((res) => {
-                // filter only startups owned by the current user
                 const myStartups = res.data.filter(
                     (s) => s.created_by === `${user.first_name} ${user.last_name} (${user.email})`
                 );
                 setStartups(myStartups);
-                if (myStartups.length === 0) {
+                if (myStartups.length === 0)
                     setError('You have no startups yet. Create a startup first.');
-                }
             })
             .catch(() => setError('Failed to load startups'));
     }, []);
@@ -43,31 +40,22 @@ export default function CreateCampaign() {
         setError('');
         setLoading(true);
         try {
-            const res = await api.post('/campaign/', {
-                ...formData,
-                status: 'pending',
-            });
+            const res = await api.post('/campaign/', { ...formData, status: 'pending' });
             navigate(`/campaigns/${res.data.id}`);
         } catch (err) {
             const data = err.response?.data;
             if (data?.error) {
-                // blockchain error
-                if (data.error.includes('Cannot connect')) {
+                if (data.error.includes('Cannot connect'))
                     setError('Cannot connect to the blockchain. Make sure Ganache is running.');
-                } else if (data.error.includes('Not enough judges')) {
-                    setError(
-                        'Not enough judges registered. At least 3 judges are needed to create a campaign.'
-                    );
-                } else {
-                    setError(data.error);
-                }
+                else if (data.error.includes('Not enough judges'))
+                    setError('Not enough judges registered. At least 3 judges are needed.');
+                else setError(data.error);
             } else if (data) {
                 const messages = Object.entries(data)
-                    .map(([field, errors]) => {
-                        const fieldName = field.replace('_', ' ');
-                        const errorText = Array.isArray(errors) ? errors.join(', ') : errors;
-                        return `${fieldName}: ${errorText}`;
-                    })
+                    .map(
+                        ([field, errors]) =>
+                            `${field.replace('_', ' ')}: ${Array.isArray(errors) ? errors.join(', ') : errors}`
+                    )
                     .join('\n');
                 setError(messages);
             } else {
@@ -78,121 +66,125 @@ export default function CreateCampaign() {
         }
     };
 
+    const inputClass =
+        'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
+
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h1 style={styles.title}>Create Campaign</h1>
-                {error && <p style={styles.error}>{error}</p>}
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.field}>
-                        <label>Campaign Name</label>
-                        <input
-                            name="campaign_name"
-                            value={formData.campaign_name}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Description</label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            style={styles.textarea}
-                            rows={4}
-                            required
-                        />
-                    </div>
-                    <div style={styles.row}>
-                        <div style={styles.field}>
-                            <label>Funding Target (ETH)</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                name="target"
-                                value={formData.target}
-                                onChange={handleChange}
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-                        <div style={styles.field}>
-                            <label>Deadline</label>
-                            <input
-                                type="date"
-                                name="deadline"
-                                value={formData.deadline}
-                                onChange={handleChange}
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div style={styles.field}>
-                        <label>Startup</label>
-                        <select
-                            name="startup"
-                            value={formData.startup}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        >
-                            <option value="">Select a startup</option>
-                            {startups.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                    {s.startup_name}
-                                </option>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-2xl mx-auto px-6 py-12">
+                    <h1 className="text-4xl font-bold mb-2">Create Campaign</h1>
+                    <p className="text-gray-400">Launch a new fundraising campaign</p>
+                </div>
+            </div>
+
+            <div className="max-w-2xl mx-auto px-6 py-8">
+                <div className="bg-white rounded-xl border border-gray-200 p-8">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                            {error.split('\n').map((line, i) => (
+                                <p key={i}>{line}</p>
                             ))}
-                        </select>
-                    </div>
-                    <button type="submit" style={styles.button} disabled={loading}>
-                        {loading ? 'Creating... (deploying contracts)' : 'Create Campaign'}
-                    </button>
-                    <p style={styles.note}>
-                        * Creating a campaign will automatically deploy smart contracts on the
-                        blockchain. This may take a few seconds.
-                    </p>
-                </form>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Campaign Name
+                            </label>
+                            <input
+                                name="campaign_name"
+                                value={formData.campaign_name}
+                                onChange={handleChange}
+                                className={inputClass}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description
+                            </label>
+                            <textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                rows={4}
+                                className={inputClass}
+                                required
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Funding Target (ETH)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    name="target"
+                                    value={formData.target}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Deadline
+                                </label>
+                                <input
+                                    type="date"
+                                    name="deadline"
+                                    value={formData.deadline}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Startup
+                            </label>
+                            <select
+                                name="startup"
+                                value={formData.startup}
+                                onChange={handleChange}
+                                className={inputClass}
+                                required
+                            >
+                                <option value="">Select a startup</option>
+                                {startups.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.startup_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <p className="text-amber-700 text-sm">
+                                ⚠️ Creating a campaign will automatically deploy smart contracts on
+                                the blockchain. This may take a few seconds.
+                            </p>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                        >
+                            {loading ? 'Creating... (deploying contracts)' : 'Create Campaign'}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { display: 'flex', justifyContent: 'center', padding: '2rem' },
-    card: {
-        background: '#fff',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '600px',
-    },
-    title: { color: '#1e1b4b', marginBottom: '1.5rem' },
-    field: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-    row: { display: 'flex', gap: '1rem' },
-    input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
-    textarea: {
-        padding: '0.5rem',
-        borderRadius: '4px',
-        border: '1px solid #ccc',
-        fontSize: '1rem',
-        resize: 'vertical',
-    },
-    button: {
-        width: '100%',
-        padding: '0.75rem',
-        background: '#4f46e5',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        marginTop: '1rem',
-    },
-    error: { color: 'red', marginBottom: '1rem' },
-    note: { color: '#666', fontSize: '0.85rem', marginTop: '0.75rem', textAlign: 'center' },
-};

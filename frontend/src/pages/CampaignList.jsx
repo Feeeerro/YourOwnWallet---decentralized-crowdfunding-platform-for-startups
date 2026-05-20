@@ -27,13 +27,12 @@ export default function CampaignList() {
             .finally(() => setLoading(false));
     }, []);
 
-    // apply filters and reset to page 1 whenever filters change
     useEffect(() => {
         let result = campaigns;
         if (statusFilter) result = result.filter((c) => c.status === statusFilter);
         if (categoryFilter) result = result.filter((c) => c.category === categoryFilter);
         setFiltered(result);
-        setCurrentPage(1); // ← reset to first page when filters change
+        setCurrentPage(1);
     }, [statusFilter, categoryFilter, campaigns]);
 
     const handleReset = () => {
@@ -41,205 +40,165 @@ export default function CampaignList() {
         setCategoryFilter('');
     };
 
-    // get only the items for the current page
     const paginated = filtered.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
 
-    if (loading) return <p style={styles.center}>Loading...</p>;
-    if (error) return <p style={styles.center}>{error}</p>;
+    const getBadgeClass = (status) => {
+        switch (status) {
+            case 'active':
+                return 'bg-emerald-100 text-emerald-700';
+            case 'pending':
+                return 'bg-amber-100 text-amber-700';
+            case 'completed':
+                return 'bg-blue-100 text-blue-700';
+            case 'failed':
+                return 'bg-red-100 text-red-700';
+            case 'rejected':
+                return 'bg-gray-100 text-gray-600';
+            default:
+                return 'bg-gray-100 text-gray-600';
+        }
+    };
+
+    if (loading)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-gray-500">Loading campaigns...</p>
+            </div>
+        );
+
+    if (error)
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-red-500">{error}</p>
+            </div>
+        );
 
     return (
-        <div style={styles.container}>
-            <h1 style={styles.title}>Campaigns</h1>
-
-            {/* Filters */}
-            <div style={styles.filters}>
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    style={styles.select}
-                >
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="failed">Failed</option>
-                    <option value="rejected">Rejected</option>
-                </select>
-
-                <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    style={styles.select}
-                >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                            {cat}
-                        </option>
-                    ))}
-                </select>
-
-                {(statusFilter || categoryFilter) && (
-                    <button onClick={handleReset} style={styles.resetButton}>
-                        Reset filters
-                    </button>
-                )}
-
-                <span style={styles.count}>
-                    {filtered.length} of {campaigns.length} campaigns
-                </span>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    <h1 className="text-4xl font-bold mb-2">Campaigns</h1>
+                    <p className="text-gray-400">
+                        Browse and invest in blockchain-verified campaigns
+                    </p>
+                </div>
             </div>
 
-            {/* Campaign list */}
-            {filtered.length === 0 ? (
-                <p style={styles.center}>No campaigns match your filters.</p>
-            ) : (
-                <>
-                    <div style={styles.grid}>
-                        {paginated.map((campaign) => (
-                            <Link
-                                to={`/campaigns/${campaign.id}`}
-                                key={campaign.id}
-                                style={styles.card}
-                            >
-                                <div style={styles.cardHeader}>
-                                    <h2 style={styles.cardTitle}>{campaign.campaign_name}</h2>
-                                    <span
-                                        style={{
-                                            ...styles.badge,
-                                            background:
-                                                campaign.status === 'active'
-                                                    ? '#d1fae5'
-                                                    : campaign.status === 'pending'
-                                                      ? '#fef3c7'
-                                                      : campaign.status === 'completed'
-                                                        ? '#dbeafe'
-                                                        : campaign.status === 'failed'
-                                                          ? '#fee2e2'
-                                                          : '#f3f4f6',
-                                            color:
-                                                campaign.status === 'active'
-                                                    ? '#065f46'
-                                                    : campaign.status === 'pending'
-                                                      ? '#92400e'
-                                                      : campaign.status === 'completed'
-                                                        ? '#1e40af'
-                                                        : campaign.status === 'failed'
-                                                          ? '#991b1b'
-                                                          : '#374151',
-                                        }}
-                                    >
-                                        {campaign.status}
-                                    </span>
-                                </div>
-                                <p style={styles.startup}>{campaign.startup_name}</p>
-                                <p style={styles.description}>{campaign.description}</p>
-                                <div style={styles.progressBar}>
-                                    <div
-                                        style={{
-                                            ...styles.progressFill,
-                                            width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
-                                        }}
-                                    />
-                                </div>
-                                <div style={styles.stats}>
-                                    <span>
-                                        {campaign.funded} / {campaign.target} ETH
-                                    </span>
-                                    <span>
-                                        Deadline: {new Date(campaign.deadline).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                {/* Filters */}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 flex flex-wrap gap-4 items-center">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
 
-                    <Pagination
-                        currentPage={currentPage}
-                        totalItems={filtered.length}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={setCurrentPage}
-                    />
-                </>
-            )}
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+
+                    {(statusFilter || categoryFilter) && (
+                        <button
+                            onClick={handleReset}
+                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+                        >
+                            Reset filters
+                        </button>
+                    )}
+
+                    <span className="ml-auto text-sm text-gray-500">
+                        {filtered.length} of {campaigns.length} campaigns
+                    </span>
+                </div>
+
+                {/* Grid */}
+                {filtered.length === 0 ? (
+                    <div className="text-center py-20">
+                        <p className="text-gray-500">No campaigns match your filters.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {paginated.map((campaign) => (
+                                <Link
+                                    to={`/campaigns/${campaign.id}`}
+                                    key={campaign.id}
+                                    className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col"
+                                >
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h2 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors flex-1 mr-2">
+                                            {campaign.campaign_name}
+                                        </h2>
+                                        <span
+                                            className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${getBadgeClass(campaign.status)}`}
+                                        >
+                                            {campaign.status}
+                                        </span>
+                                    </div>
+
+                                    {/* Startup name */}
+                                    <p className="text-sm text-indigo-600 font-medium mb-3">
+                                        {campaign.startup_name}
+                                    </p>
+
+                                    {/* Description */}
+                                    <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">
+                                        {campaign.description}
+                                    </p>
+
+                                    {/* Progress bar */}
+                                    <div className="bg-gray-100 rounded-full h-1.5 mb-3">
+                                        <div
+                                            className="bg-indigo-600 h-1.5 rounded-full transition-all"
+                                            style={{
+                                                width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>
+                                            {campaign.funded} / {campaign.target} ETH
+                                        </span>
+                                        <span>
+                                            {new Date(campaign.deadline).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <Pagination
+                            currentPage={currentPage}
+                            totalItems={filtered.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            onPageChange={setCurrentPage}
+                        />
+                    </>
+                )}
+            </div>
         </div>
     );
 }
-
-const styles = {
-    container: { padding: '2rem', maxWidth: '1200px', margin: '0 auto' },
-    title: { marginBottom: '1.5rem', color: '#1e1b4b' },
-    filters: {
-        display: 'flex',
-        gap: '1rem',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        flexWrap: 'wrap',
-    },
-    select: {
-        padding: '0.5rem 1rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        fontSize: '0.95rem',
-        cursor: 'pointer',
-    },
-    resetButton: {
-        padding: '0.5rem 1rem',
-        background: '#f3f4f6',
-        border: '1px solid #ccc',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '0.95rem',
-    },
-    count: { color: '#666', fontSize: '0.9rem', marginLeft: 'auto' },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: '1.5rem',
-    },
-    card: {
-        background: '#fff',
-        padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-    },
-    cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '0.5rem',
-    },
-    cardTitle: { color: '#1e1b4b', fontSize: '1.1rem' },
-    badge: {
-        padding: '0.25rem 0.75rem',
-        borderRadius: '999px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
-    },
-    startup: { color: '#4f46e5', fontSize: '0.9rem', marginBottom: '0.75rem' },
-    description: {
-        color: '#444',
-        fontSize: '0.95rem',
-        marginBottom: '1rem',
-        display: '-webkit-box',
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: 'vertical',
-        overflow: 'hidden',
-    },
-    progressBar: {
-        background: '#e5e7eb',
-        borderRadius: '999px',
-        height: '8px',
-        marginBottom: '0.75rem',
-    },
-    progressFill: { background: '#4f46e5', height: '100%', borderRadius: '999px' },
-    stats: { display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#666' },
-    center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
-};

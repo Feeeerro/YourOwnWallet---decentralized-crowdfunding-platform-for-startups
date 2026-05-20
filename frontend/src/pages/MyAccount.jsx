@@ -10,7 +10,6 @@ export default function MyAccount() {
     const [pendingCampaigns, setPendingCampaigns] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,7 +20,6 @@ export default function MyAccount() {
                     api.get('/transaction/'),
                 ]);
 
-                // filter user's own startups and campaigns
                 setStartups(
                     startupRes.data.filter(
                         (s) =>
@@ -34,11 +32,8 @@ export default function MyAccount() {
                             c.created_by === `${user.first_name} ${user.last_name} (${user.email})`
                     )
                 );
-
-                // investor transactions
                 setTransactions(txRes.data);
 
-                // for judges: find pending campaigns they haven't voted on yet
                 if (user.role === 'judge') {
                     const pendingList = campaignRes.data.filter((c) => c.status === 'pending');
                     const unvoted = [];
@@ -47,9 +42,7 @@ export default function MyAccount() {
                             const judgeRes = await api.get(
                                 `/campaign/${campaign.id}/judge-status/`
                             );
-                            if (!judgeRes.data.has_voted) {
-                                unvoted.push(campaign);
-                            }
+                            if (!judgeRes.data.has_voted) unvoted.push(campaign);
                         } catch {
                             unvoted.push(campaign);
                         }
@@ -57,7 +50,7 @@ export default function MyAccount() {
                     setPendingCampaigns(unvoted);
                 }
             } catch {
-                setError('Failed to load data');
+                // silently fail
             } finally {
                 setLoading(false);
             }
@@ -66,309 +59,286 @@ export default function MyAccount() {
         fetchData();
     }, []);
 
+    const getBadgeClass = (status) => {
+        switch (status) {
+            case 'active':
+                return 'bg-emerald-100 text-emerald-700';
+            case 'completed':
+                return 'bg-blue-100 text-blue-700';
+            case 'failed':
+                return 'bg-red-100 text-red-700';
+            case 'rejected':
+                return 'bg-gray-100 text-gray-600';
+            default:
+                return 'bg-amber-100 text-amber-700';
+        }
+    };
+
     return (
-        <div style={styles.container}>
-            {/* Profile section */}
-            <div style={styles.card}>
-                <div style={styles.accountHeader}>
-                    <h1 style={styles.title}>My Account</h1>
-                    {user.role === 'startupper' && (
-                        <Link to="/startups/create" style={styles.createButton}>
-                            + Create Startup
-                        </Link>
-                    )}
-                </div>
-                <div style={styles.profileGrid}>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Full Name</span>
-                        <span>
-                            {user.first_name} {user.last_name}
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-4xl mx-auto px-6 py-12">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-4xl font-bold mb-1">
+                                {user.first_name} {user.last_name}
+                            </h1>
+                            <p className="text-gray-400">{user.email}</p>
+                        </div>
+                        <span className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full capitalize">
+                            {user.role}
                         </span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Username</span>
-                        <span>{user.username}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Email</span>
-                        <span>{user.email}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Role</span>
-                        <span style={styles.badge}>{user.role}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Country</span>
-                        <span>{user.country || '—'}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>City</span>
-                        <span>{user.city || '—'}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Phone</span>
-                        <span>{user.phone || '—'}</span>
-                    </div>
-                    <div style={styles.profileItem}>
-                        <span style={styles.label}>Address</span>
-                        <span>{user.address || '—'}</span>
-                    </div>
-                    <div style={{ ...styles.profileItem, gridColumn: '1 / -1' }}>
-                        <span style={styles.label}>Wallet Address</span>
-                        <span style={styles.wallet}>{user.wallet_address}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Judge — pending campaigns to vote on */}
-            {user.role === 'judge' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>
-                        Campaigns Awaiting Your Vote ({loading ? '...' : pendingCampaigns.length})
-                    </h2>
-                    {loading && <p style={styles.empty}>Loading...</p>}
-                    {!loading && pendingCampaigns.length === 0 && (
-                        <p style={styles.empty}>No campaigns waiting for your vote.</p>
-                    )}
-                    {!loading && pendingCampaigns.length > 0 && (
-                        <div style={styles.itemGrid}>
-                            {pendingCampaigns.map((c) => (
-                                <Link to={`/campaigns/${c.id}`} key={c.id} style={styles.item}>
-                                    <strong style={styles.itemTitle}>{c.campaign_name}</strong>
-                                    <span style={styles.itemMeta}>{c.startup_name}</span>
-                                    <span style={styles.itemMeta}>Target: {c.target} ETH</span>
-                                    <span
-                                        style={{
-                                            ...styles.statusBadge,
-                                            background: '#fef3c7',
-                                            color: '#92400e',
-                                        }}
-                                    >
-                                        pending
-                                    </span>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Startupper — my startups */}
-            {user.role === 'startupper' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>My Startups ({startups.length})</h2>
-                    {loading && <p style={styles.empty}>Loading...</p>}
-                    {!loading && startups.length === 0 && (
-                        <p style={styles.empty}>
-                            You haven't created any startups yet.{' '}
-                            <Link to="/startups/create" style={styles.inlineLink}>
-                                Create your first one
+            <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                {/* Profile info */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Profile</h2>
+                        {user.role === 'startupper' && (
+                            <Link
+                                to="/startups/create"
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                            >
+                                + Create Startup
                             </Link>
-                        </p>
-                    )}
-                    {!loading && startups.length > 0 && (
-                        <div style={styles.itemGrid}>
-                            {startups.map((s) => (
-                                <Link to={`/startups/${s.id}`} key={s.id} style={styles.item}>
-                                    <strong style={styles.itemTitle}>{s.startup_name}</strong>
-                                    <span style={styles.itemMeta}>{s.category}</span>
-                                    <span
-                                        style={{
-                                            ...styles.statusBadge,
-                                            background:
-                                                s.status === 'active' ? '#d1fae5' : '#fef3c7',
-                                            color: s.status === 'active' ? '#065f46' : '#92400e',
-                                        }}
-                                    >
-                                        {s.status}
-                                    </span>
-                                </Link>
-                            ))}
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Username
+                            </p>
+                            <p className="text-sm text-gray-800 font-medium">{user.username}</p>
                         </div>
-                    )}
-                </div>
-            )}
-
-            {/* Startupper — my campaigns */}
-            {user.role === 'startupper' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>My Campaigns ({campaigns.length})</h2>
-                    {loading && <p style={styles.empty}>Loading...</p>}
-                    {!loading && campaigns.length === 0 && (
-                        <p style={styles.empty}>You haven't created any campaigns yet.</p>
-                    )}
-                    {!loading && campaigns.length > 0 && (
-                        <div style={styles.itemGrid}>
-                            {campaigns.map((c) => (
-                                <Link to={`/campaigns/${c.id}`} key={c.id} style={styles.item}>
-                                    <strong style={styles.itemTitle}>{c.campaign_name}</strong>
-                                    <span style={styles.itemMeta}>
-                                        {c.funded} / {c.target} ETH
-                                    </span>
-                                    <span
-                                        style={{
-                                            ...styles.statusBadge,
-                                            background:
-                                                c.status === 'active'
-                                                    ? '#d1fae5'
-                                                    : c.status === 'completed'
-                                                      ? '#dbeafe'
-                                                      : c.status === 'failed'
-                                                        ? '#fee2e2'
-                                                        : '#fef3c7',
-                                            color:
-                                                c.status === 'active'
-                                                    ? '#065f46'
-                                                    : c.status === 'completed'
-                                                      ? '#1e40af'
-                                                      : c.status === 'failed'
-                                                        ? '#991b1b'
-                                                        : '#92400e',
-                                        }}
-                                    >
-                                        {c.status}
-                                    </span>
-                                </Link>
-                            ))}
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Country
+                            </p>
+                            <p className="text-sm text-gray-800">{user.country || '—'}</p>
                         </div>
-                    )}
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                City
+                            </p>
+                            <p className="text-sm text-gray-800">{user.city || '—'}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Phone
+                            </p>
+                            <p className="text-sm text-gray-800">{user.phone || '—'}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Address
+                            </p>
+                            <p className="text-sm text-gray-800">{user.address || '—'}</p>
+                        </div>
+                        <div className="col-span-2 md:col-span-3">
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                                Wallet Address
+                            </p>
+                            <p className="text-sm text-indigo-600 font-mono break-all">
+                                {user.wallet_address}
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            )}
 
-            {/* Investor — campaigns where they invested */}
-            {user.role === 'investor' && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>
-                        My Investments (
-                        {loading
-                            ? '...'
-                            : Object.keys(
-                                  transactions.reduce((acc, tx) => {
-                                      acc[tx.campaign] = true;
-                                      return acc;
-                                  }, {})
-                              ).length}
-                        )
-                    </h2>
-                    {loading && <p style={styles.empty}>Loading...</p>}
-                    {!loading && transactions.length === 0 && (
-                        <p style={styles.empty}>You haven't invested in any campaign yet.</p>
-                    )}
-                    {!loading && transactions.length > 0 && (
-                        <div style={styles.itemGrid}>
-                            {Object.values(
-                                transactions.reduce((acc, tx) => {
-                                    if (!acc[tx.campaign]) {
-                                        acc[tx.campaign] = {
-                                            campaign_id: tx.campaign,
-                                            campaign_name: tx.campaign_name,
-                                            total: 0,
-                                            count: 0,
-                                        };
-                                    }
-                                    acc[tx.campaign].total += parseFloat(tx.amount);
-                                    acc[tx.campaign].count += 1;
-                                    return acc;
-                                }, {})
-                            ).map((investment) => (
+                {/* Judge — pending campaigns */}
+                {user.role === 'judge' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                            Campaigns Awaiting Your Vote (
+                            {loading ? '...' : pendingCampaigns.length})
+                        </h2>
+                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {!loading && pendingCampaigns.length === 0 && (
+                            <p className="text-gray-500 text-sm">
+                                No campaigns waiting for your vote.
+                            </p>
+                        )}
+                        {!loading && pendingCampaigns.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {pendingCampaigns.map((c) => (
+                                    <Link
+                                        to={`/campaigns/${c.id}`}
+                                        key={c.id}
+                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                    >
+                                        <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
+                                            {c.campaign_name}
+                                        </p>
+                                        <p className="text-sm text-gray-500">{c.startup_name}</p>
+                                        <p className="text-sm text-gray-500">
+                                            Target: {c.target} ETH
+                                        </p>
+                                        <span className="inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                                            pending
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Startupper — my startups */}
+                {user.role === 'startupper' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                            My Startups ({startups.length})
+                        </h2>
+                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {!loading && startups.length === 0 && (
+                            <p className="text-gray-500 text-sm">
+                                You haven't created any startups yet.{' '}
                                 <Link
-                                    to={`/campaigns/${investment.campaign_id}`}
-                                    key={investment.campaign_id}
-                                    style={styles.item}
+                                    to="/startups/create"
+                                    className="text-indigo-600 hover:text-indigo-500"
                                 >
-                                    <strong style={styles.itemTitle}>
-                                        {investment.campaign_name}
-                                    </strong>
-                                    <span style={styles.itemMeta}>
-                                        Total invested: {investment.total.toFixed(2)} ETH
-                                    </span>
-                                    <span style={styles.itemMeta}>
-                                        {investment.count} transaction
-                                        {investment.count > 1 ? 's' : ''}
-                                    </span>
+                                    Create your first one
                                 </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
+                            </p>
+                        )}
+                        {!loading && startups.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {startups.map((s) => (
+                                    <Link
+                                        to={`/startups/${s.id}`}
+                                        key={s.id}
+                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                {s.startup_name}
+                                            </p>
+                                            <span
+                                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${getBadgeClass(s.status)}`}
+                                            >
+                                                {s.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-1">{s.category}</p>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Startupper — my campaigns */}
+                {user.role === 'startupper' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                            My Campaigns ({campaigns.length})
+                        </h2>
+                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {!loading && campaigns.length === 0 && (
+                            <p className="text-gray-500 text-sm">
+                                You haven't created any campaigns yet.
+                            </p>
+                        )}
+                        {!loading && campaigns.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {campaigns.map((c) => (
+                                    <Link
+                                        to={`/campaigns/${c.id}`}
+                                        key={c.id}
+                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                {c.campaign_name}
+                                            </p>
+                                            <span
+                                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${getBadgeClass(c.status)}`}
+                                            >
+                                                {c.status}
+                                            </span>
+                                        </div>
+                                        <div className="bg-gray-100 rounded-full h-1.5 mb-2">
+                                            <div
+                                                className="bg-indigo-600 h-1.5 rounded-full"
+                                                style={{
+                                                    width: `${Math.min((c.funded / c.target) * 100, 100)}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500">
+                                            {c.funded} / {c.target} ETH
+                                        </p>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Investor — my investments */}
+                {user.role === 'investor' && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                            My Investments (
+                            {loading
+                                ? '...'
+                                : Object.keys(
+                                      transactions.reduce((acc, tx) => {
+                                          acc[tx.campaign] = true;
+                                          return acc;
+                                      }, {})
+                                  ).length}
+                            )
+                        </h2>
+                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {!loading && transactions.length === 0 && (
+                            <p className="text-gray-500 text-sm">
+                                You haven't invested in any campaign yet.
+                            </p>
+                        )}
+                        {!loading && transactions.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.values(
+                                    transactions.reduce((acc, tx) => {
+                                        if (!acc[tx.campaign]) {
+                                            acc[tx.campaign] = {
+                                                campaign_id: tx.campaign,
+                                                campaign_name: tx.campaign_name,
+                                                total: 0,
+                                                count: 0,
+                                            };
+                                        }
+                                        acc[tx.campaign].total += parseFloat(tx.amount);
+                                        acc[tx.campaign].count += 1;
+                                        return acc;
+                                    }, {})
+                                ).map((investment) => (
+                                    <Link
+                                        to={`/campaigns/${investment.campaign_id}`}
+                                        key={investment.campaign_id}
+                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                    >
+                                        <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
+                                            {investment.campaign_name}
+                                        </p>
+                                        <p className="text-sm text-indigo-600 font-semibold">
+                                            {investment.total.toFixed(2)} ETH invested
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {investment.count} transaction
+                                            {investment.count > 1 ? 's' : ''}
+                                        </p>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
-
-const styles = {
-    container: { padding: '2rem', maxWidth: '900px', margin: '0 auto' },
-    card: {
-        background: '#fff',
-        padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        marginBottom: '1.5rem',
-    },
-    accountHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-    },
-    title: { color: '#1e1b4b' },
-    sectionTitle: { color: '#1e1b4b', marginBottom: '1rem' },
-    profileGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' },
-    profileItem: { display: 'flex', flexDirection: 'column', gap: '4px' },
-    label: {
-        fontSize: '0.8rem',
-        color: '#666',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
-    badge: {
-        display: 'inline-block',
-        padding: '0.25rem 0.75rem',
-        background: '#ede9fe',
-        color: '#4f46e5',
-        borderRadius: '999px',
-        fontSize: '0.85rem',
-        fontWeight: 'bold',
-        width: 'fit-content',
-    },
-    wallet: {
-        fontFamily: 'monospace',
-        fontSize: '0.85rem',
-        color: '#4f46e5',
-        wordBreak: 'break-all',
-    },
-    createButton: {
-        background: '#4f46e5',
-        color: '#fff',
-        padding: '0.5rem 1rem',
-        borderRadius: '6px',
-        textDecoration: 'none',
-        fontWeight: 'bold',
-    },
-    itemGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-        gap: '1rem',
-    },
-    item: {
-        background: '#f8f7ff',
-        padding: '1rem',
-        borderRadius: '6px',
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem',
-    },
-    itemTitle: { color: '#1e1b4b', fontSize: '0.95rem' },
-    itemMeta: { color: '#666', fontSize: '0.85rem' },
-    statusBadge: {
-        padding: '0.2rem 0.6rem',
-        borderRadius: '999px',
-        fontSize: '0.75rem',
-        fontWeight: 'bold',
-        width: 'fit-content',
-    },
-    inlineLink: { color: '#4f46e5', textDecoration: 'none' },
-    empty: { color: '#666' },
-};

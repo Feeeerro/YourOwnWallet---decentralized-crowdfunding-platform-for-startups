@@ -114,151 +114,157 @@ export default function CreateStartup() {
         }
     };
 
+    const inputClass =
+        'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
+
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h1 style={styles.title}>Create Startup</h1>
-                {error && <p style={styles.error}>{error}</p>}
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.field}>
-                        <label>Startup Name</label>
-                        <input
-                            name="startup_name"
-                            value={formData.startup_name}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Description</label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            style={styles.textarea}
-                            rows={4}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Category</label>
-                        <select
-                            name="category"
-                            value={formData.category}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        >
-                            <option value="">Select a category</option>
-                            {CATEGORIES.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div style={styles.row}>
-                        <div style={styles.field}>
-                            <label>Country</label>
-                            <select
-                                name="country"
-                                value={formData.country}
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-gray-900 text-white">
+                <div className="max-w-2xl mx-auto px-6 py-12">
+                    <h1 className="text-4xl font-bold mb-2">Create Startup</h1>
+                    <p className="text-gray-400">Register your startup on the platform</p>
+                </div>
+            </div>
+
+            <div className="max-w-2xl mx-auto px-6 py-8">
+                <div className="bg-white rounded-xl border border-gray-200 p-8">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Startup Name
+                            </label>
+                            <input
+                                name="startup_name"
+                                value={formData.startup_name}
                                 onChange={handleChange}
-                                style={styles.input}
+                                className={inputClass}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description
+                            </label>
+                            <textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                rows={4}
+                                className={inputClass}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Category
+                            </label>
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                className={inputClass}
                                 required
                             >
-                                <option value="">Select a country</option>
-                                {COUNTRIES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
+                                <option value="">Select a category</option>
+                                {CATEGORIES.map((cat) => (
+                                    <option key={cat} value={cat}>
+                                        {cat}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                        <div style={styles.field}>
-                            <label>Continent</label>
-                            <select
-                                name="continent"
-                                value={formData.continent}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Country
+                                </label>
+                                <select
+                                    name="country"
+                                    value={formData.country}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                    required
+                                >
+                                    <option value="">Select a country</option>
+                                    {COUNTRIES.map((c) => (
+                                        <option key={c} value={c}>
+                                            {c}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Continent
+                                </label>
+                                <select
+                                    name="continent"
+                                    value={formData.continent}
+                                    onChange={handleChange}
+                                    className={inputClass}
+                                    required
+                                >
+                                    <option value="">Select continent</option>
+                                    <option value="africa">Africa</option>
+                                    <option value="antarctica">Antarctica</option>
+                                    <option value="asia">Asia</option>
+                                    <option value="europe">Europe</option>
+                                    <option value="north_america">North America</option>
+                                    <option value="oceania">Oceania</option>
+                                    <option value="south_america">South America</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Address
+                            </label>
+                            <input
+                                name="address"
+                                value={formData.address}
                                 onChange={handleChange}
-                                style={styles.input}
+                                className={inputClass}
                                 required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Status
+                            </label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleChange}
+                                className={inputClass}
                             >
-                                <option value="">Select continent</option>
-                                <option value="africa">Africa</option>
-                                <option value="antarctica">Antarctica</option>
-                                <option value="asia">Asia</option>
-                                <option value="europe">Europe</option>
-                                <option value="north_america">North America</option>
-                                <option value="oceania">Oceania</option>
-                                <option value="south_america">South America</option>
+                                <option value="pending">Pending</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
                             </select>
                         </div>
-                    </div>
-                    <div style={styles.field}>
-                        <label>Address</label>
-                        <input
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            style={styles.input}
-                            required
-                        />
-                    </div>
-                    <div style={styles.field}>
-                        <label>Status</label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            style={styles.input}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
                         >
-                            <option value="pending">Pending</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                    <button type="submit" style={styles.button} disabled={loading}>
-                        {loading ? 'Creating...' : 'Create Startup'}
-                    </button>
-                </form>
+                            {loading ? 'Creating...' : 'Create Startup'}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    container: { display: 'flex', justifyContent: 'center', padding: '2rem' },
-    card: {
-        background: '#fff',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '600px',
-    },
-    title: { color: '#1e1b4b', marginBottom: '1.5rem' },
-    field: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-    row: { display: 'flex', gap: '1rem' },
-    input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
-    textarea: {
-        padding: '0.5rem',
-        borderRadius: '4px',
-        border: '1px solid #ccc',
-        fontSize: '1rem',
-        resize: 'vertical',
-    },
-    button: {
-        width: '100%',
-        padding: '0.75rem',
-        background: '#4f46e5',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-        fontSize: '1rem',
-        cursor: 'pointer',
-        marginTop: '1rem',
-    },
-    error: { color: 'red', marginBottom: '1rem' },
-};

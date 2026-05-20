@@ -18,12 +18,16 @@ export default function CampaignDetail() {
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveMessage, setApproveMessage] = useState('');
     const [judgeVoted, setJudgeVoted] = useState(false);
+    const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+    const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [withdrawMessage, setWithdrawMessage] = useState('');
     const [refundLoading, setRefundLoading] = useState(false);
     const [refundMessage, setRefundMessage] = useState('');
     const [withdrawn, setWithdrawn] = useState(false);
     const [refunded, setRefunded] = useState(false);
+    const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+    const [showRefundConfirm, setShowRefundConfirm] = useState(false);
 
     const getBadgeStyle = (status) => ({
         padding: '0.25rem 0.75rem',
@@ -282,22 +286,80 @@ export default function CampaignDetail() {
                                 As a judge you can approve or reject this campaign.
                             </p>
                             {approveMessage && <p style={styles.message}>{approveMessage}</p>}
-                            <div style={styles.judgeButtons}>
-                                <button
-                                    onClick={handleApprove}
-                                    disabled={approveLoading}
-                                    style={styles.approveButton}
-                                >
-                                    {approveLoading ? 'Processing...' : '✓ Approve'}
-                                </button>
-                                <button
-                                    onClick={handleReject}
-                                    disabled={approveLoading}
-                                    style={styles.rejectButton}
-                                >
-                                    {approveLoading ? 'Processing...' : '✗ Reject'}
-                                </button>
-                            </div>
+
+                            {/* No confirmation shown yet */}
+                            {!showApproveConfirm && !showRejectConfirm && (
+                                <div style={styles.judgeButtons}>
+                                    <button
+                                        onClick={() => setShowApproveConfirm(true)}
+                                        style={styles.approveButton}
+                                    >
+                                        ✓ Approve
+                                    </button>
+                                    <button
+                                        onClick={() => setShowRejectConfirm(true)}
+                                        style={styles.rejectButton}
+                                    >
+                                        ✗ Reject
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Approve confirmation */}
+                            {showApproveConfirm && (
+                                <div style={styles.confirmBox}>
+                                    <p style={styles.confirmText}>
+                                        Are you sure you want to <strong>approve</strong> this
+                                        campaign? This action cannot be undone.
+                                    </p>
+                                    <div style={styles.confirmButtons}>
+                                        <button
+                                            onClick={() => {
+                                                setShowApproveConfirm(false);
+                                                handleApprove();
+                                            }}
+                                            disabled={approveLoading}
+                                            style={styles.approveButton}
+                                        >
+                                            {approveLoading ? 'Processing...' : 'Yes, approve'}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowApproveConfirm(false)}
+                                            style={styles.cancelButton}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Reject confirmation */}
+                            {showRejectConfirm && (
+                                <div style={{ ...styles.confirmBox, background: '#fee2e2' }}>
+                                    <p style={{ ...styles.confirmText, color: '#991b1b' }}>
+                                        Are you sure you want to <strong>reject</strong> this
+                                        campaign? This action cannot be undone.
+                                    </p>
+                                    <div style={styles.confirmButtons}>
+                                        <button
+                                            onClick={() => {
+                                                setShowRejectConfirm(false);
+                                                handleReject();
+                                            }}
+                                            disabled={approveLoading}
+                                            style={styles.rejectButton}
+                                        >
+                                            {approveLoading ? 'Processing...' : 'Yes, reject'}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowRejectConfirm(false)}
+                                            style={styles.cancelButton}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -345,15 +407,40 @@ export default function CampaignDetail() {
                                     <strong>{campaign.funded} ETH</strong>.
                                 </p>
                                 {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
-                                <button
-                                    onClick={handleWithdraw}
-                                    disabled={withdrawLoading}
-                                    style={styles.approveButton}
-                                >
-                                    {withdrawLoading
-                                        ? 'Processing...'
-                                        : `Withdraw ${campaign.funded} ETH`}
-                                </button>
+
+                                {!showWithdrawConfirm ? (
+                                    <button
+                                        onClick={() => setShowWithdrawConfirm(true)}
+                                        style={styles.approveButton}
+                                    >
+                                        Withdraw {campaign.funded} ETH
+                                    </button>
+                                ) : (
+                                    <div style={styles.confirmBox}>
+                                        <p style={styles.confirmText}>
+                                            Are you sure you want to withdraw{' '}
+                                            <strong>{campaign.funded} ETH</strong>? This action
+                                            cannot be undone.
+                                        </p>
+                                        <div style={styles.confirmButtons}>
+                                            <button
+                                                onClick={handleWithdraw}
+                                                disabled={withdrawLoading}
+                                                style={styles.approveButton}
+                                            >
+                                                {withdrawLoading
+                                                    ? 'Processing...'
+                                                    : 'Yes, withdraw'}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowWithdrawConfirm(false)}
+                                                style={styles.cancelButton}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
@@ -371,13 +458,37 @@ export default function CampaignDetail() {
                                 This campaign did not reach its goal. You can claim a refund.
                             </p>
                             {refundMessage && <p style={styles.message}>{refundMessage}</p>}
-                            <button
-                                onClick={handleRefund}
-                                disabled={refundLoading}
-                                style={styles.rejectButton}
-                            >
-                                {refundLoading ? 'Processing...' : 'Claim Refund'}
-                            </button>
+
+                            {!showRefundConfirm ? (
+                                <button
+                                    onClick={() => setShowRefundConfirm(true)}
+                                    style={styles.rejectButton}
+                                >
+                                    Claim Refund
+                                </button>
+                            ) : (
+                                <div style={styles.confirmBox}>
+                                    <p style={styles.confirmText}>
+                                        Are you sure you want to claim your refund? This action
+                                        cannot be undone.
+                                    </p>
+                                    <div style={styles.confirmButtons}>
+                                        <button
+                                            onClick={handleRefund}
+                                            disabled={refundLoading}
+                                            style={styles.rejectButton}
+                                        >
+                                            {refundLoading ? 'Processing...' : 'Yes, claim refund'}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowRefundConfirm(false)}
+                                            style={styles.cancelButton}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -505,4 +616,17 @@ const styles = {
     },
     td: { padding: '0.75rem', borderBottom: '1px solid #e5e7eb', color: '#444' },
     center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
+    confirmBox: { background: '#fef3c7', padding: '1rem', borderRadius: '6px', marginTop: '1rem' },
+    confirmText: { color: '#92400e', marginBottom: '1rem' },
+    confirmButtons: { display: 'flex', gap: '1rem' },
+    cancelButton: {
+        padding: '0.75rem 2rem',
+        background: '#f3f4f6',
+        color: '#374151',
+        border: '1px solid #ccc',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+    },
 };

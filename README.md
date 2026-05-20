@@ -72,6 +72,7 @@ Make sure you have the following installed on your machine:
 
 ---
 
+```
 YourOwnWallet/
 ├── backend/ ← Django project
 │ ├── backend/ ← Django settings, urls, wsgi
@@ -100,6 +101,7 @@ YourOwnWallet/
 │ └── package.json
 ├── docker-compose.yml
 └── README.md
+```
 
 ## Installation & Setup
 

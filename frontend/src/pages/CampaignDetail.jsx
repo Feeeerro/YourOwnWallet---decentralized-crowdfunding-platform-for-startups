@@ -22,6 +22,8 @@ export default function CampaignDetail() {
     const [withdrawMessage, setWithdrawMessage] = useState('');
     const [refundLoading, setRefundLoading] = useState(false);
     const [refundMessage, setRefundMessage] = useState('');
+    const [withdrawn, setWithdrawn] = useState(false);
+    const [refunded, setRefunded] = useState(false);
 
     const getBadgeStyle = (status) => ({
         padding: '0.25rem 0.75rem',
@@ -193,6 +195,7 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/withdraw/`);
             setWithdrawMessage(`✓ ${res.data.message}`);
+            setWithdrawn(true); // ← add this
             fetchData();
         } catch (err) {
             setWithdrawMessage(`✗ ${err.response?.data?.error || 'Withdrawal failed'}`);
@@ -207,6 +210,7 @@ export default function CampaignDetail() {
         try {
             const res = await api.post(`/campaign/${id}/refund/`);
             setRefundMessage(`✓ ${res.data.message}`);
+            setRefunded(true); // ← add this
             fetchData();
         } catch (err) {
             setRefundMessage(`✗ ${err.response?.data?.error || 'Refund failed'}`);
@@ -332,18 +336,26 @@ export default function CampaignDetail() {
                 campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
                     <div style={styles.card}>
                         <h2 style={styles.sectionTitle}>Withdraw Funds</h2>
-                        <p style={styles.meta}>
-                            Your campaign succeeded! You can now withdraw{' '}
-                            <strong>{campaign.funded} ETH</strong>.
-                        </p>
-                        {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
-                        <button
-                            onClick={handleWithdraw}
-                            disabled={withdrawLoading}
-                            style={styles.approveButton}
-                        >
-                            {withdrawLoading ? 'Processing...' : `Withdraw ${campaign.funded} ETH`}
-                        </button>
+                        {withdrawn ? (
+                            <p style={styles.success}>✓ Funds successfully withdrawn.</p>
+                        ) : (
+                            <>
+                                <p style={styles.meta}>
+                                    Your campaign succeeded! You can now withdraw{' '}
+                                    <strong>{campaign.funded} ETH</strong>.
+                                </p>
+                                {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
+                                <button
+                                    onClick={handleWithdraw}
+                                    disabled={withdrawLoading}
+                                    style={styles.approveButton}
+                                >
+                                    {withdrawLoading
+                                        ? 'Processing...'
+                                        : `Withdraw ${campaign.funded} ETH`}
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
 
@@ -351,18 +363,23 @@ export default function CampaignDetail() {
             {user && user.role === 'investor' && campaign.status === 'failed' && (
                 <div style={styles.card}>
                     <h2 style={styles.sectionTitle}>Claim Refund</h2>
-                    <p style={styles.meta}>
-                        This campaign did not reach its goal. You can claim a refund for your
-                        investment.
-                    </p>
-                    {refundMessage && <p style={styles.message}>{refundMessage}</p>}
-                    <button
-                        onClick={handleRefund}
-                        disabled={refundLoading}
-                        style={styles.rejectButton}
-                    >
-                        {refundLoading ? 'Processing...' : 'Claim Refund'}
-                    </button>
+                    {refunded ? (
+                        <p style={styles.success}>✓ Refund successfully claimed.</p>
+                    ) : (
+                        <>
+                            <p style={styles.meta}>
+                                This campaign did not reach its goal. You can claim a refund.
+                            </p>
+                            {refundMessage && <p style={styles.message}>{refundMessage}</p>}
+                            <button
+                                onClick={handleRefund}
+                                disabled={refundLoading}
+                                style={styles.rejectButton}
+                            >
+                                {refundLoading ? 'Processing...' : 'Claim Refund'}
+                            </button>
+                        </>
+                    )}
                 </div>
             )}
 

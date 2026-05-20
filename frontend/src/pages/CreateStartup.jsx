@@ -2,6 +2,85 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
+const CATEGORIES = [
+    'Technology',
+    'Finance',
+    'Healthcare',
+    'Education',
+    'Energy',
+    'Food & Beverage',
+    'Real Estate',
+    'Retail',
+    'Transportation',
+    'Entertainment',
+    'Agriculture',
+    'Manufacturing',
+    'Other',
+];
+
+const COUNTRIES = [
+    'Afghanistan',
+    'Albania',
+    'Algeria',
+    'Argentina',
+    'Australia',
+    'Austria',
+    'Belgium',
+    'Brazil',
+    'Canada',
+    'Chile',
+    'China',
+    'Colombia',
+    'Croatia',
+    'Czech Republic',
+    'Denmark',
+    'Egypt',
+    'Finland',
+    'France',
+    'Germany',
+    'Greece',
+    'Hungary',
+    'India',
+    'Indonesia',
+    'Iran',
+    'Iraq',
+    'Ireland',
+    'Israel',
+    'Italy',
+    'Japan',
+    'Jordan',
+    'Kenya',
+    'Malaysia',
+    'Mexico',
+    'Morocco',
+    'Netherlands',
+    'New Zealand',
+    'Nigeria',
+    'Norway',
+    'Pakistan',
+    'Peru',
+    'Philippines',
+    'Poland',
+    'Portugal',
+    'Romania',
+    'Russia',
+    'Saudi Arabia',
+    'Serbia',
+    'Singapore',
+    'South Africa',
+    'South Korea',
+    'Spain',
+    'Sweden',
+    'Switzerland',
+    'Thailand',
+    'Turkey',
+    'Ukraine',
+    'United Arab Emirates',
+    'United Kingdom',
+    'United States',
+    'Vietnam',
+];
+
 export default function CreateStartup() {
     const navigate = useNavigate();
 
@@ -64,24 +143,38 @@ export default function CreateStartup() {
                     </div>
                     <div style={styles.field}>
                         <label>Category</label>
-                        <input
+                        <select
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
                             style={styles.input}
                             required
-                        />
+                        >
+                            <option value="">Select a category</option>
+                            {CATEGORIES.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div style={styles.row}>
                         <div style={styles.field}>
                             <label>Country</label>
-                            <input
+                            <select
                                 name="country"
                                 value={formData.country}
                                 onChange={handleChange}
                                 style={styles.input}
                                 required
-                            />
+                            >
+                                <option value="">Select a country</option>
+                                {COUNTRIES.map((c) => (
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div style={styles.field}>
                             <label>Continent</label>

@@ -7,14 +7,14 @@ export default function CampaignDetail() {
     const { id } = useParams();
     const { user } = useAuth();
 
-    const [campaign, setCampaign]         = useState(null);
+    const [campaign, setCampaign] = useState(null);
     const [transactions, setTransactions] = useState([]);
-    const [loading, setLoading]           = useState(true);
-    const [error, setError]               = useState('');
-    const [fundAmount, setFundAmount]     = useState('');
-    const [fundLoading, setFundLoading]   = useState(false);
-    const [fundError, setFundError]       = useState('');
-    const [fundSuccess, setFundSuccess]   = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [fundAmount, setFundAmount] = useState('');
+    const [fundLoading, setFundLoading] = useState(false);
+    const [fundError, setFundError] = useState('');
+    const [fundSuccess, setFundSuccess] = useState('');
     const [approveLoading, setApproveLoading] = useState(false);
     const [approveMessage, setApproveMessage] = useState('');
     const [judgeVoted, setJudgeVoted] = useState(false);
@@ -29,27 +29,39 @@ export default function CampaignDetail() {
         fontSize: '0.8rem',
         fontWeight: 'bold',
         whiteSpace: 'nowrap',
-        background: status === 'active' ? '#d1fae5'
-                : status === 'pending' ? '#fef3c7'
-                : status === 'completed' ? '#dbeafe'
-                : status === 'failed' ? '#fee2e2'
-                : status === 'rejected' ? '#f3f4f6'
-                : '#f3f4f6',
-        color: status === 'active' ? '#065f46'
-            : status === 'pending' ? '#92400e'
-            : status === 'completed' ? '#1e40af'
-            : status === 'failed' ? '#991b1b'
-            : status === 'rejected' ? '#374151'
-            : '#374151',
+        background:
+            status === 'active'
+                ? '#d1fae5'
+                : status === 'pending'
+                  ? '#fef3c7'
+                  : status === 'completed'
+                    ? '#dbeafe'
+                    : status === 'failed'
+                      ? '#fee2e2'
+                      : status === 'rejected'
+                        ? '#f3f4f6'
+                        : '#f3f4f6',
+        color:
+            status === 'active'
+                ? '#065f46'
+                : status === 'pending'
+                  ? '#92400e'
+                  : status === 'completed'
+                    ? '#1e40af'
+                    : status === 'failed'
+                      ? '#991b1b'
+                      : status === 'rejected'
+                        ? '#374151'
+                        : '#374151',
     });
 
     const fetchData = async () => {
         try {
             const [campaignRes, transactionsRes] = await Promise.all([
                 api.get(`/campaign/${id}/`),
-                api.get(`/transaction/campaign/${id}/`)
+                api.get(`/transaction/campaign/${id}/`),
             ]);
-            
+
             const campaignData = campaignRes.data;
             setCampaign(campaignData);
             setTransactions(transactionsRes.data);
@@ -64,7 +76,7 @@ export default function CampaignDetail() {
                     setJudgeVoted(false);
                 }
             }
-            
+
             // auto-finalize if deadline passed and campaign is still active
             if (campaignData.status === 'active') {
                 const now = new Date();
@@ -81,7 +93,6 @@ export default function CampaignDetail() {
                     }
                 }
             }
-            
         } catch {
             setError('Failed to load campaign');
         } finally {
@@ -89,7 +100,9 @@ export default function CampaignDetail() {
         }
     };
 
-    useEffect(() => { fetchData(); }, [id]);
+    useEffect(() => {
+        fetchData();
+    }, [id]);
 
     const handleFund = async (e) => {
         e.preventDefault();
@@ -203,33 +216,35 @@ export default function CampaignDetail() {
     };
 
     if (loading) return <p style={styles.center}>Loading...</p>;
-    if (error)   return <p style={styles.center}>{error}</p>;
+    if (error) return <p style={styles.center}>{error}</p>;
     if (!campaign) return <p style={styles.center}>Campaign not found.</p>;
 
     const progress = Math.min((campaign.funded / campaign.target) * 100, 100);
 
     return (
         <div style={styles.container}>
-
             {/* Header */}
             <div style={styles.header}>
                 <div>
                     <h1 style={styles.title}>{campaign.campaign_name}</h1>
                     <p style={styles.meta}>
-                        By <Link to={`/startups/${campaign.startup}`} style={styles.link}>{campaign.startup_name}</Link>
+                        By{' '}
+                        <Link to={`/startups/${campaign.startup}`} style={styles.link}>
+                            {campaign.startup_name}
+                        </Link>
                         {' · '} Created by {campaign.created_by}
                     </p>
                 </div>
-                <span style={getBadgeStyle(campaign.status)}>
-                    {campaign.status}
-                </span>
+                <span style={getBadgeStyle(campaign.status)}>{campaign.status}</span>
             </div>
 
             {/* Description */}
             <div style={styles.card}>
                 <h2 style={styles.sectionTitle}>About</h2>
                 <p style={styles.description}>{campaign.description}</p>
-                <p style={styles.meta}>Deadline: {new Date(campaign.deadline).toLocaleDateString()}</p>
+                <p style={styles.meta}>
+                    Deadline: {new Date(campaign.deadline).toLocaleDateString()}
+                </p>
             </div>
 
             {/* Funding progress */}
@@ -239,9 +254,15 @@ export default function CampaignDetail() {
                     <div style={{ ...styles.progressFill, width: `${progress}%` }} />
                 </div>
                 <div style={styles.fundingStats}>
-                    <span><strong>{campaign.funded} ETH</strong> raised</span>
-                    <span><strong>{progress.toFixed(1)}%</strong></span>
-                    <span>Goal: <strong>{campaign.target} ETH</strong></span>
+                    <span>
+                        <strong>{campaign.funded} ETH</strong> raised
+                    </span>
+                    <span>
+                        <strong>{progress.toFixed(1)}%</strong>
+                    </span>
+                    <span>
+                        Goal: <strong>{campaign.target} ETH</strong>
+                    </span>
                 </div>
             </div>
 
@@ -253,13 +274,23 @@ export default function CampaignDetail() {
                         <p style={styles.message}>✓ Your vote has been recorded.</p>
                     ) : (
                         <>
-                            <p style={styles.meta}>As a judge you can approve or reject this campaign.</p>
+                            <p style={styles.meta}>
+                                As a judge you can approve or reject this campaign.
+                            </p>
                             {approveMessage && <p style={styles.message}>{approveMessage}</p>}
                             <div style={styles.judgeButtons}>
-                                <button onClick={handleApprove} disabled={approveLoading} style={styles.approveButton}>
+                                <button
+                                    onClick={handleApprove}
+                                    disabled={approveLoading}
+                                    style={styles.approveButton}
+                                >
                                     {approveLoading ? 'Processing...' : '✓ Approve'}
                                 </button>
-                                <button onClick={handleReject} disabled={approveLoading} style={styles.rejectButton}>
+                                <button
+                                    onClick={handleReject}
+                                    disabled={approveLoading}
+                                    style={styles.rejectButton}
+                                >
                                     {approveLoading ? 'Processing...' : '✗ Reject'}
                                 </button>
                             </div>
@@ -269,55 +300,60 @@ export default function CampaignDetail() {
             )}
 
             {/* Funding section */}
-            {user && user.role === 'investor' && campaign.status === 'active'
-                && campaign.created_by !== `${user.first_name} ${user.last_name} (${user.email})` && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>Fund this Campaign</h2>
-                    {fundError   && <p style={styles.error}>{fundError}</p>}
-                    {fundSuccess && <p style={styles.success}>{fundSuccess}</p>}
-                    <form onSubmit={handleFund} style={styles.fundForm}>
-                        <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            placeholder="Amount in ETH"
-                            value={fundAmount}
-                            onChange={(e) => setFundAmount(e.target.value)}
-                            style={styles.input}
-                            required
-                        />
-                        <button type="submit" style={styles.fundButton} disabled={fundLoading}>
-                            {fundLoading ? 'Processing...' : 'Fund Now'}
-                        </button>
-                    </form>
-                </div>
-            )}
+            {user &&
+                user.role === 'investor' &&
+                campaign.status === 'active' &&
+                campaign.created_by !== `${user.first_name} ${user.last_name} (${user.email})` && (
+                    <div style={styles.card}>
+                        <h2 style={styles.sectionTitle}>Fund this Campaign</h2>
+                        {fundError && <p style={styles.error}>{fundError}</p>}
+                        {fundSuccess && <p style={styles.success}>{fundSuccess}</p>}
+                        <form onSubmit={handleFund} style={styles.fundForm}>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                placeholder="Amount in ETH"
+                                value={fundAmount}
+                                onChange={(e) => setFundAmount(e.target.value)}
+                                style={styles.input}
+                                required
+                            />
+                            <button type="submit" style={styles.fundButton} disabled={fundLoading}>
+                                {fundLoading ? 'Processing...' : 'Fund Now'}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
             {/* Withdraw section — owner after success */}
-            {user && campaign.status === 'completed'
-            && campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
-                <div style={styles.card}>
-                    <h2 style={styles.sectionTitle}>Withdraw Funds</h2>
-                    <p style={styles.meta}>
-                        Your campaign succeeded! You can now withdraw <strong>{campaign.funded} ETH</strong>.
-                    </p>
-                    {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
-                    <button
-                        onClick={handleWithdraw}
-                        disabled={withdrawLoading}
-                        style={styles.approveButton}
-                    >
-                        {withdrawLoading ? 'Processing...' : `Withdraw ${campaign.funded} ETH`}
-                    </button>
-                </div>
-            )}
+            {user &&
+                campaign.status === 'completed' &&
+                campaign.created_by === `${user.first_name} ${user.last_name} (${user.email})` && (
+                    <div style={styles.card}>
+                        <h2 style={styles.sectionTitle}>Withdraw Funds</h2>
+                        <p style={styles.meta}>
+                            Your campaign succeeded! You can now withdraw{' '}
+                            <strong>{campaign.funded} ETH</strong>.
+                        </p>
+                        {withdrawMessage && <p style={styles.message}>{withdrawMessage}</p>}
+                        <button
+                            onClick={handleWithdraw}
+                            disabled={withdrawLoading}
+                            style={styles.approveButton}
+                        >
+                            {withdrawLoading ? 'Processing...' : `Withdraw ${campaign.funded} ETH`}
+                        </button>
+                    </div>
+                )}
 
             {/* Refund section — investors after failure */}
             {user && user.role === 'investor' && campaign.status === 'failed' && (
                 <div style={styles.card}>
                     <h2 style={styles.sectionTitle}>Claim Refund</h2>
                     <p style={styles.meta}>
-                        This campaign did not reach its goal. You can claim a refund for your investment.
+                        This campaign did not reach its goal. You can claim a refund for your
+                        investment.
                     </p>
                     {refundMessage && <p style={styles.message}>{refundMessage}</p>}
                     <button
@@ -345,7 +381,7 @@ export default function CampaignDetail() {
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions.map(tx => (
+                            {transactions.map((tx) => (
                                 <tr key={tx.id}>
                                     <td style={styles.td}>{tx.sender}</td>
                                     <td style={styles.td}>{tx.amount} ETH</td>
@@ -356,36 +392,100 @@ export default function CampaignDetail() {
                     </table>
                 )}
             </div>
-
         </div>
     );
 }
 
 const styles = {
-    container:    { padding: '2rem', maxWidth: '900px', margin: '0 auto' },
-    header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' },
-    title:        { color: '#1e1b4b', marginBottom: '0.5rem' },
-    meta:         { color: '#666', fontSize: '0.95rem' },
-    badge:        { padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' },
-    card:         { background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: '1.5rem' },
+    container: { padding: '2rem', maxWidth: '900px', margin: '0 auto' },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '2rem',
+    },
+    title: { color: '#1e1b4b', marginBottom: '0.5rem' },
+    meta: { color: '#666', fontSize: '0.95rem' },
+    badge: {
+        padding: '0.25rem 0.75rem',
+        borderRadius: '999px',
+        fontSize: '0.9rem',
+        fontWeight: 'bold',
+        whiteSpace: 'nowrap',
+    },
+    card: {
+        background: '#fff',
+        padding: '1.5rem',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        marginBottom: '1.5rem',
+    },
     sectionTitle: { color: '#1e1b4b', marginBottom: '1rem' },
-    description:  { color: '#444', lineHeight: '1.6', marginBottom: '1rem' },
-    link:         { color: '#4f46e5', textDecoration: 'none' },
-    progressBar:  { background: '#e5e7eb', borderRadius: '999px', height: '12px', marginBottom: '1rem' },
-    progressFill: { background: '#4f46e5', height: '100%', borderRadius: '999px', transition: 'width 0.3s' },
+    description: { color: '#444', lineHeight: '1.6', marginBottom: '1rem' },
+    link: { color: '#4f46e5', textDecoration: 'none' },
+    progressBar: {
+        background: '#e5e7eb',
+        borderRadius: '999px',
+        height: '12px',
+        marginBottom: '1rem',
+    },
+    progressFill: {
+        background: '#4f46e5',
+        height: '100%',
+        borderRadius: '999px',
+        transition: 'width 0.3s',
+    },
     fundingStats: { display: 'flex', justifyContent: 'space-between', color: '#444' },
     judgeButtons: { display: 'flex', gap: '1rem', marginTop: '1rem' },
-    approveButton: { padding: '0.75rem 2rem', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' },
-    rejectButton:  { padding: '0.75rem 2rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' },
-    fundForm:     { display: 'flex', gap: '1rem', marginTop: '1rem' },
-    input:        { padding: '0.75rem', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1rem', flex: 1 },
-    fundButton:   { padding: '0.75rem 2rem', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' },
-    message:      { color: '#4f46e5', marginBottom: '1rem' },
-    error:        { color: '#dc2626', marginBottom: '1rem' },
-    success:      { color: '#059669', marginBottom: '1rem' },
-    empty:        { color: '#666' },
-    table:        { width: '100%', borderCollapse: 'collapse' },
-    th:           { textAlign: 'left', padding: '0.75rem', borderBottom: '2px solid #e5e7eb', color: '#1e1b4b' },
-    td:           { padding: '0.75rem', borderBottom: '1px solid #e5e7eb', color: '#444' },
-    center:       { textAlign: 'center', marginTop: '3rem', color: '#666' },
+    approveButton: {
+        padding: '0.75rem 2rem',
+        background: '#059669',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+    },
+    rejectButton: {
+        padding: '0.75rem 2rem',
+        background: '#dc2626',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+    },
+    fundForm: { display: 'flex', gap: '1rem', marginTop: '1rem' },
+    input: {
+        padding: '0.75rem',
+        borderRadius: '6px',
+        border: '1px solid #ccc',
+        fontSize: '1rem',
+        flex: 1,
+    },
+    fundButton: {
+        padding: '0.75rem 2rem',
+        background: '#4f46e5',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+    },
+    message: { color: '#4f46e5', marginBottom: '1rem' },
+    error: { color: '#dc2626', marginBottom: '1rem' },
+    success: { color: '#059669', marginBottom: '1rem' },
+    empty: { color: '#666' },
+    table: { width: '100%', borderCollapse: 'collapse' },
+    th: {
+        textAlign: 'left',
+        padding: '0.75rem',
+        borderBottom: '2px solid #e5e7eb',
+        color: '#1e1b4b',
+    },
+    td: { padding: '0.75rem', borderBottom: '1px solid #e5e7eb', color: '#444' },
+    center: { textAlign: 'center', marginTop: '3rem', color: '#666' },
 };

@@ -5,9 +5,8 @@ import api from '../api/axios';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-
     // Initialize state from localStorage so the user stays logged in after page refresh
-    const [user, setUser]   = useState(() => {
+    const [user, setUser] = useState(() => {
         const stored = localStorage.getItem('user');
         return stored ? JSON.parse(stored) : null;
     });

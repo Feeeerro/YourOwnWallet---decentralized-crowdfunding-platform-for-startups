@@ -47,3 +47,7 @@ postman
 ganache-db
 
 .gitattributes
+
+# Prettier
+.prettierrc
+.prettierignore

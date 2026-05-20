@@ -14,7 +14,7 @@ export default function CreateStartup() {
         category: '',
         status: 'pending',
     });
-    const [error, setError]     = useState('');
+    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
@@ -43,24 +43,55 @@ export default function CreateStartup() {
                 <form onSubmit={handleSubmit}>
                     <div style={styles.field}>
                         <label>Startup Name</label>
-                        <input name="startup_name" value={formData.startup_name} onChange={handleChange} style={styles.input} required />
+                        <input
+                            name="startup_name"
+                            value={formData.startup_name}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                        />
                     </div>
                     <div style={styles.field}>
                         <label>Description</label>
-                        <textarea name="description" value={formData.description} onChange={handleChange} style={styles.textarea} rows={4} required />
+                        <textarea
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            style={styles.textarea}
+                            rows={4}
+                            required
+                        />
                     </div>
                     <div style={styles.field}>
                         <label>Category</label>
-                        <input name="category" value={formData.category} onChange={handleChange} style={styles.input} required />
+                        <input
+                            name="category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                        />
                     </div>
                     <div style={styles.row}>
                         <div style={styles.field}>
                             <label>Country</label>
-                            <input name="country" value={formData.country} onChange={handleChange} style={styles.input} required />
+                            <input
+                                name="country"
+                                value={formData.country}
+                                onChange={handleChange}
+                                style={styles.input}
+                                required
+                            />
                         </div>
                         <div style={styles.field}>
                             <label>Continent</label>
-                            <select name="continent" value={formData.continent} onChange={handleChange} style={styles.input} required>
+                            <select
+                                name="continent"
+                                value={formData.continent}
+                                onChange={handleChange}
+                                style={styles.input}
+                                required
+                            >
                                 <option value="">Select continent</option>
                                 <option value="africa">Africa</option>
                                 <option value="antarctica">Antarctica</option>
@@ -74,11 +105,22 @@ export default function CreateStartup() {
                     </div>
                     <div style={styles.field}>
                         <label>Address</label>
-                        <input name="address" value={formData.address} onChange={handleChange} style={styles.input} required />
+                        <input
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                        />
                     </div>
                     <div style={styles.field}>
                         <label>Status</label>
-                        <select name="status" value={formData.status} onChange={handleChange} style={styles.input}>
+                        <select
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                            style={styles.input}
+                        >
                             <option value="pending">Pending</option>
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
@@ -95,12 +137,35 @@ export default function CreateStartup() {
 
 const styles = {
     container: { display: 'flex', justifyContent: 'center', padding: '2rem' },
-    card:      { background: '#fff', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', width: '100%', maxWidth: '600px' },
-    title:     { color: '#1e1b4b', marginBottom: '1.5rem' },
-    field:     { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
-    row:       { display: 'flex', gap: '1rem' },
-    input:     { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
-    textarea:  { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem', resize: 'vertical' },
-    button:    { width: '100%', padding: '0.75rem', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '1rem', cursor: 'pointer', marginTop: '1rem' },
-    error:     { color: 'red', marginBottom: '1rem' },
+    card: {
+        background: '#fff',
+        padding: '2rem',
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        width: '100%',
+        maxWidth: '600px',
+    },
+    title: { color: '#1e1b4b', marginBottom: '1.5rem' },
+    field: { marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 },
+    row: { display: 'flex', gap: '1rem' },
+    input: { padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '1rem' },
+    textarea: {
+        padding: '0.5rem',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        fontSize: '1rem',
+        resize: 'vertical',
+    },
+    button: {
+        width: '100%',
+        padding: '0.75rem',
+        background: '#4f46e5',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        fontSize: '1rem',
+        cursor: 'pointer',
+        marginTop: '1rem',
+    },
+    error: { color: 'red', marginBottom: '1rem' },
 };

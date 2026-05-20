@@ -17,24 +17,39 @@ export default function App() {
         <BrowserRouter>
             <Navbar />
             <Routes>
-                <Route path="/"                  element={<Home />} />
-                <Route path="/login"             element={<Login />} />
-                <Route path="/register"          element={<Register />} />
-                <Route path="/startups"          element={<StartupList />} />
-                <Route path="/startups/:id"      element={<StartupDetail />} />
-                <Route path="/campaigns"         element={<CampaignList />} />
-                <Route path="/campaigns/:id"     element={<CampaignDetail />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/startups" element={<StartupList />} />
+                <Route path="/startups/:id" element={<StartupDetail />} />
+                <Route path="/campaigns" element={<CampaignList />} />
+                <Route path="/campaigns/:id" element={<CampaignDetail />} />
 
                 {/* Protected routes */}
-                <Route path="/account" element={
-                    <ProtectedRoute><MyAccount /></ProtectedRoute>
-                } />
-                <Route path="/startups/create" element={
-                    <ProtectedRoute><CreateStartup /></ProtectedRoute>
-                } />
-                <Route path="/campaigns/create" element={
-                    <ProtectedRoute><CreateCampaign /></ProtectedRoute>
-                } />
+                <Route
+                    path="/account"
+                    element={
+                        <ProtectedRoute>
+                            <MyAccount />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/startups/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateStartup />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/campaigns/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateCampaign />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </BrowserRouter>
     );

@@ -19,9 +19,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # Any request starting with /api/users/ is delegated to users/urls.py
-    # Example: /api/users/register/ → users/urls.py → register view
     path('api/users/', include('users.urls')),
     path('api/startup/', include('startup.urls')),
     path('api/campaign/', include('campaign.urls')),

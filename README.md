@@ -72,6 +72,35 @@ Make sure you have the following installed on your machine:
 
 ---
 
+YourOwnWallet/
+├── backend/ ← Django project
+│ ├── backend/ ← Django settings, urls, wsgi
+│ ├── users/ ← User model and auth endpoints
+│ ├── startup/ ← Startup model and endpoints
+│ ├── campaign/ ← Campaign model and endpoints
+│ ├── transaction/ ← Transaction model and endpoints
+│ ├── web3_utils.py ← Blockchain utility functions
+│ ├── Dockerfile
+│ └── requirements.txt
+├── blockchain/ ← Smart contracts
+│ ├── contracts/
+│ │ ├── Campaign.sol
+│ │ └── CampaignApproval.sol
+│ ├── scripts/
+│ │ └── deploy.js
+│ ├── test/
+│ │ └── Campaign.test.js
+│ └── hardhat.config.js
+├── frontend/ ← React application
+│ ├── src/
+│ │ ├── api/ ← Axios configuration
+│ │ ├── components/ ← Reusable components
+│ │ ├── context/ ← Auth context
+│ │ └── pages/ ← Page components
+│ └── package.json
+├── docker-compose.yml
+└── README.md
+
 ## Installation & Setup
 
 ### 1. Clone the repository

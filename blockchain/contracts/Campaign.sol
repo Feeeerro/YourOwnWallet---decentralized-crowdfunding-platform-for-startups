@@ -120,7 +120,7 @@ contract Campaign {
     ) {
         owner            = msg.sender;                                        // the deployer is the owner
         name             = _name;
-        fundingTarget           = _fundingTarget;
+        fundingTarget    = _fundingTarget;
         deadline         = block.timestamp + (_durationDays * 1 days);        // calculate deadline from now
         approvalContract = CampaignApproval(_approvalContract);               // link to the approval contract
         status           = Status.Pending;                                    // start in pending state

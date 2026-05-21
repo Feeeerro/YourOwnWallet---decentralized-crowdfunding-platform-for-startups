@@ -12,9 +12,6 @@ contract CampaignApproval {
 
     // ─── State variables ───────────────────────────────────────────────
 
-    /// @notice The address of the Campaign contract this approval is linked to
-    address public campaignAddress;
-
     /// @notice The 3 judge addresses — fixed at deployment, cannot be changed
     address[3] public judges;
 
@@ -72,11 +69,9 @@ contract CampaignApproval {
     /**
      * @notice Deploys the approval contract.
      * @param _judges Array of exactly 3 judge wallet addresses
-     * @param _campaignAddress The address of the Campaign contract to link to
      */
-    constructor(address[3] memory _judges, address _campaignAddress) {
+    constructor(address[3] memory _judges) {
         judges          = _judges;
-        campaignAddress = _campaignAddress;
     }
 
     // ─── Judge functions ───────────────────────────────────────────────

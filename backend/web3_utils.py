@@ -79,8 +79,7 @@ def deploy_campaign_contracts(deployer_address, judge_addresses, campaign_name, 
 
     approval_contract = w3.eth.contract(abi=approval_abi, bytecode=approval_bytecode)
     approval_tx = approval_contract.constructor(
-        judge_addresses,
-        Web3.to_checksum_address('0x0000000000000000000000000000000000000000')  # placeholder
+        judge_addresses
     ).transact({'from': deployer_address})
     approval_receipt = w3.eth.wait_for_transaction_receipt(approval_tx)
     approval_address = approval_receipt.contractAddress

@@ -27,7 +27,7 @@ def startup_list(request):
             # automatically set created_by to the logged-in user
             serializer.save(
                 created_by=request.user,
-                created_at=request.data.get('created_at')
+                created_at=request.data.get('created_at')   # Theoretically useless for auto_now_add=True on model.
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -38,7 +38,7 @@ def startup_list(request):
 def startup_detail(request, pk):
     # Get the startup or return 404
     try:
-        startup = Startup.objects.get(pk=pk)
+        startup = Startup.objects.get(pk=pk)    # GET startup from Primary Key
     except Startup.DoesNotExist:
         return Response(
             {'error': 'Startup not found'},

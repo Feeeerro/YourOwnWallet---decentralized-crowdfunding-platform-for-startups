@@ -142,10 +142,11 @@ def judge_status(request, pk):
         has_approved = contract.functions.hasApproved(judge_address).call()
         has_rejected = contract.functions.hasRejected(judge_address).call()
 
+        # has_approved and has_rejected for future UI improvements showing what judges done
         return Response({
-            'has_voted': has_approved or has_rejected,
-            'has_approved': has_approved,
-            'has_rejected': has_rejected,
+            'has_voted': has_approved or has_rejected,  # False --> not voted yet
+            'has_approved': has_approved,   # True --> has voted "approved"
+            'has_rejected': has_rejected,   # True --> has voted "reject"
         })
 
     except Exception as e:
@@ -339,8 +340,13 @@ def finalize_campaign(request, pk):
         })
         w3.eth.wait_for_transaction_receipt(tx_hash)
 
-        goal_reached = campaign.funded >= Decimal(str(campaign.target))
-        campaign.status = 'completed' if goal_reached else 'failed'
+        # read status directly from blockchain 
+        contract_status = contract.functions.status().call()
+        status_map = {
+            2: 'completed',  # Status.Succeeded in Solidity enum
+            3: 'failed',     # Status.Failed in Solidity enum
+        }
+        campaign.status = status_map.get(contract_status, 'active')
         campaign.save()
 
         return Response({

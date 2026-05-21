@@ -27,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             country=validated_data.get('country'),
             city=validated_data.get('city'),
             address=validated_data.get('address'),
-            role=validated_data.get('role', 'visitor'),
+            role=validated_data.get('role', 'investor'),
         )
 
 

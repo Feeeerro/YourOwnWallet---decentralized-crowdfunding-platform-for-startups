@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import CampaignCard from '../components/CampaignCard';
 
 export default function StartupDetail() {
     const { id } = useParams();
@@ -117,47 +118,7 @@ export default function StartupDetail() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {campaigns.map((campaign) => (
-                                <Link
-                                    to={`/campaigns/${campaign.id}`}
-                                    key={campaign.id}
-                                    className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                            {campaign.campaign_name}
-                                        </h3>
-                                        <span
-                                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                                campaign.status === 'active'
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : campaign.status === 'completed'
-                                                      ? 'bg-blue-100 text-blue-700'
-                                                      : campaign.status === 'failed'
-                                                        ? 'bg-red-100 text-red-700'
-                                                        : 'bg-amber-100 text-amber-700'
-                                            }`}
-                                        >
-                                            {campaign.status}
-                                        </span>
-                                    </div>
-                                    <div className="bg-gray-100 rounded-full h-1.5 mb-2">
-                                        <div
-                                            className="bg-indigo-600 h-1.5 rounded-full"
-                                            style={{
-                                                width: `${Math.min((campaign.funded / campaign.target) * 100, 100)}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="flex justify-between text-xs text-gray-500">
-                                        <span>
-                                            {campaign.funded} / {campaign.target} ETH
-                                        </span>
-                                        <span>
-                                            Deadline:{' '}
-                                            {new Date(campaign.deadline).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </Link>
+                                <CampaignCard key={campaign.id} campaign={campaign} />
                             ))}
                         </div>
                     )}

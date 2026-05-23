@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import CampaignCard from '../components/CampaignCard';
+import StartupCard from '../components/StartupCard';
 
 export default function MyAccount() {
     const { user } = useAuth();
@@ -164,23 +166,8 @@ export default function MyAccount() {
                         )}
                         {!loading && pendingCampaigns.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {pendingCampaigns.map((c) => (
-                                    <Link
-                                        to={`/campaigns/${c.id}`}
-                                        key={c.id}
-                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
-                                    >
-                                        <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
-                                            {c.campaign_name}
-                                        </p>
-                                        <p className="text-sm text-gray-500">{c.startup_name}</p>
-                                        <p className="text-sm text-gray-500">
-                                            Target: {c.target} ETH
-                                        </p>
-                                        <span className="inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                                            pending
-                                        </span>
-                                    </Link>
+                                {pendingCampaigns.map((campaign) => (
+                                    <CampaignCard key={campaign.id} campaign={campaign} />
                                 ))}
                             </div>
                         )}
@@ -207,24 +194,8 @@ export default function MyAccount() {
                         )}
                         {!loading && startups.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {startups.map((s) => (
-                                    <Link
-                                        to={`/startups/${s.id}`}
-                                        key={s.id}
-                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                {s.startup_name}
-                                            </p>
-                                            <span
-                                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${getBadgeClass(s.status)}`}
-                                            >
-                                                {s.status}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-gray-500 mt-1">{s.category}</p>
-                                    </Link>
+                                {startups.map((startup) => (
+                                    <StartupCard key={startup.id} startup={startup} />
                                 ))}
                             </div>
                         )}
@@ -245,34 +216,8 @@ export default function MyAccount() {
                         )}
                         {!loading && campaigns.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {campaigns.map((c) => (
-                                    <Link
-                                        to={`/campaigns/${c.id}`}
-                                        key={c.id}
-                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                {c.campaign_name}
-                                            </p>
-                                            <span
-                                                className={`text-xs font-medium px-2 py-0.5 rounded-full ${getBadgeClass(c.status)}`}
-                                            >
-                                                {c.status}
-                                            </span>
-                                        </div>
-                                        <div className="bg-gray-100 rounded-full h-1.5 mb-2">
-                                            <div
-                                                className="bg-indigo-600 h-1.5 rounded-full"
-                                                style={{
-                                                    width: `${Math.min((c.funded / c.target) * 100, 100)}%`,
-                                                }}
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-500">
-                                            {c.funded} / {c.target} ETH
-                                        </p>
-                                    </Link>
+                                {campaigns.map((campaign) => (
+                                    <CampaignCard key={campaign.id} campaign={campaign} />
                                 ))}
                             </div>
                         )}

@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:pk>/withdraw/', views.withdraw_funds, name='withdraw-funds'),
     path('<int:pk>/refund/', views.claim_refund, name='claim-refund'),
     path('<int:pk>/judge-status/', views.judge_status, name='judge-status'),
+    path('<int:pk>/user-status/', views.campaign_user_status, name='campaign-user-status'),
 ]

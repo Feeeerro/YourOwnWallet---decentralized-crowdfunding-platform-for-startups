@@ -124,6 +124,43 @@ def campaign_detail(request, pk):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def campaign_user_status(request, pk):
+    """
+    Returns the current user's status for this campaign:
+    - has_withdrawn: whether the owner has already withdrawn
+    - has_refunded: whether this investor has already claimed refund
+    """
+    try:
+        campaign = Campaign.objects.get(pk=pk)
+    except Campaign.DoesNotExist:
+        return Response({'error': 'Campaign not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        # check if funds have been withdrawn (for owner)
+        has_withdrawn = contract.functions.withdrawn().call()
+
+        # check if this investor already claimed refund
+        remaining_investment = contract.functions.investments(
+            request.user.wallet_address
+        ).call()
+        has_refunded = (
+            campaign.status == 'failed' and
+            remaining_investment == 0
+        )
+
+        return Response({
+            'has_withdrawn': has_withdrawn,
+            'has_refunded': has_refunded,
+        })
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def judge_status(request, pk):
     """
     Returns whether the current judge has already voted on this campaign.

@@ -79,6 +79,17 @@ export default function CampaignDetail() {
                     }
                 }
             }
+
+            // check withdraw/refund status from blockchain
+            if (user && (campaignData.status === 'completed' || campaignData.status === 'failed')) {
+                try {
+                    const userStatusRes = await api.get(`/campaign/${id}/user-status/`);
+                    setWithdrawn(userStatusRes.data.has_withdrawn);
+                    setRefunded(userStatusRes.data.has_refunded);
+                } catch {
+                    // silently ignore
+                }
+            }
         } catch {
             setError('Failed to load campaign');
         } finally {

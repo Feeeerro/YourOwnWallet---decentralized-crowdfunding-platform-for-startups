@@ -17,6 +17,18 @@ export default function CampaignList() {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
+        api.get('/campaign/')
+            .then((res) => {
+                setCampaigns(res.data);
+                setFiltered(res.data);
+                const unique = [...new Set(res.data.map((c) => c.category).filter(Boolean))];
+                setCategories(unique);
+            })
+            .catch(() => setError('Failed to load campaigns'))
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
         let result = campaigns;
         if (statusFilter) result = result.filter((c) => c.status === statusFilter);
         if (categoryFilter) result = result.filter((c) => c.category === categoryFilter);

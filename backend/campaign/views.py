@@ -5,16 +5,62 @@ from rest_framework.response import Response
 from campaign.models import Campaign
 from campaign.serializers import CampaignSerializer
 from web3_utils import get_campaign_approval_contract, get_campaign_contract, get_web3
+from django.conf import settings
 from django.utils import timezone
 from decimal import Decimal
 import math
 
+def auto_finalize_if_needed(campaign, user_wallet):
+    """
+    Checks if a campaign needs to be finalized and does it automatically.
+    Called every time a campaign is fetched from the API.
+    Uses the authenticated user's wallet or the system wallet for guest users.
+    """
+    if campaign.status != 'active':
+        return
+
+    now = timezone.now()
+    if now < campaign.deadline:
+        return
+
+    try:
+        w3 = get_web3()
+        contract = get_campaign_contract(campaign.campaign_address)
+
+        tx_hash = contract.functions.finalize().transact({
+            'from': user_wallet
+        })
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        contract_status = contract.functions.status().call()
+        status_map = {
+            2: 'completed',
+            3: 'failed',
+        }
+        campaign.status = status_map.get(contract_status, 'active')
+        campaign.save()
+
+    except Exception:
+        pass
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def campaign_list(request):
     # GET → return all campaigns (public)
     if request.method == 'GET':
+        campaigns = Campaign.objects.all()
+
+        # use authenticated user's wallet or system wallet for guest users
+        wallet = (
+            request.user.wallet_address
+            if request.user.is_authenticated
+            else settings.SYSTEM_WALLET
+        )
+
+        for campaign in campaigns:
+            auto_finalize_if_needed(campaign, wallet)
+
+        # re-fetch after potential finalization
         campaigns = Campaign.objects.all()
         serializer = CampaignSerializer(campaigns, many=True)
         return Response(serializer.data)
@@ -90,6 +136,15 @@ def campaign_detail(request, pk):
 
     # GET → return the campaign (public)
     if request.method == 'GET':
+        # use authenticated user's wallet or system wallet for guest users
+        wallet = (
+            request.user.wallet_address
+            if request.user.is_authenticated
+            else settings.SYSTEM_WALLET
+        )
+
+        auto_finalize_if_needed(campaign, wallet)
+        campaign.refresh_from_db()
         serializer = CampaignSerializer(campaign)
         return Response(serializer.data)
 

@@ -66,20 +66,6 @@ export default function CampaignDetail() {
                 }
             }
 
-            if (campaignData.status === 'active') {
-                const now = new Date();
-                const deadline = new Date(campaignData.deadline);
-                if (now >= deadline) {
-                    try {
-                        await api.post(`/campaign/${id}/finalize/`);
-                        const updated = await api.get(`/campaign/${id}/`);
-                        setCampaign(updated.data);
-                    } catch (err) {
-                        console.log('Auto-finalize:', err.response?.data?.error);
-                    }
-                }
-            }
-
             // check withdraw/refund status from blockchain
             if (user && (campaignData.status === 'completed' || campaignData.status === 'failed')) {
                 try {

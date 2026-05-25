@@ -17,18 +17,6 @@ export default function CampaignList() {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        api.get('/campaign/')
-            .then((res) => {
-                setCampaigns(res.data);
-                setFiltered(res.data);
-                const unique = [...new Set(res.data.map((c) => c.category).filter(Boolean))];
-                setCategories(unique);
-            })
-            .catch(() => setError('Failed to load campaigns'))
-            .finally(() => setLoading(false));
-    }, []);
-
-    useEffect(() => {
         let result = campaigns;
         if (statusFilter) result = result.filter((c) => c.status === statusFilter);
         if (categoryFilter) result = result.filter((c) => c.category === categoryFilter);
@@ -45,23 +33,6 @@ export default function CampaignList() {
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
     );
-
-    // const getBadgeClass = (status) => {
-    //     switch (status) {
-    //         case 'active':
-    //             return 'bg-emerald-100 text-emerald-700';
-    //         case 'pending':
-    //             return 'bg-amber-100 text-amber-700';
-    //         case 'completed':
-    //             return 'bg-blue-100 text-blue-700';
-    //         case 'failed':
-    //             return 'bg-red-100 text-red-700';
-    //         case 'rejected':
-    //             return 'bg-gray-100 text-gray-600';
-    //         default:
-    //             return 'bg-gray-100 text-gray-600';
-    //     }
-    // };
 
     if (loading)
         return (

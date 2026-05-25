@@ -7,7 +7,8 @@ module.exports = {
     localhost: {
       url: "http://127.0.0.1:8545",
       accounts: {
-        mnemonic: "test test test test test test test test test test test junk",
+        mnemonic:
+          "angry stock army post essence palace ride extra member ensure shell add",
       },
     },
   },

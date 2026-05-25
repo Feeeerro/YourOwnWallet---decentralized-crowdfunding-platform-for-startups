@@ -161,3 +161,7 @@ AUTH_USER_MODEL = 'users.User'
 # Connection to Hardhat provider
 
 GANACHE_RPC_URL = env('GANACHE_RPC_URL', default='http://127.0.0.1:8545')
+
+# First ganache account for finalization of expired campaigns
+
+SYSTEM_WALLET = env('SYSTEM_WALLET', default='0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')

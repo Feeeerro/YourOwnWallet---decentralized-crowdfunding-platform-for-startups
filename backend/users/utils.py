@@ -12,29 +12,30 @@ def get_web3():
 
 def assign_wallet_address():
     """
-    Assigns the first available Hardhat account to a new user.
-    - Gets all 20 Hardhat accounts
-    - Checks which ones are already assigned in the database
-    - Returns the first available one
-    - Raises an exception if all 20 are taken
+    Assigns the first available Ganache account to a new user.
+    - Skips the system wallet (account 0) reserved for finalization
+    - Skips addresses already assigned to existing users
+    - Returns the first available address
+    - Raises an exception if all accounts are taken
     """
-    from users.models import User  # import here to avoid circular imports
+    from users.models import User
 
     w3 = get_web3()
-
-    # Get all 20 Hardhat accounts
     all_accounts = w3.eth.accounts
 
-    # Get all wallet addresses already assigned in the database
+    # get all wallet addresses already assigned in the database
     assigned = set(
         User.objects.exclude(wallet_address='')
                     .exclude(wallet_address=None)
+                    .exclude(wallet_address='reserved')
                     .values_list('wallet_address', flat=True)
     )
 
-    # Return the first account not yet assigned
+    # skip system wallet and already assigned addresses
     for account in all_accounts:
+        if account == settings.SYSTEM_WALLET:
+            continue  # ← skip account 0
         if account not in assigned:
             return account
 
-    raise Exception("No available wallet addresses. All 20 Hardhat accounts are assigned.")
+    raise Exception("No available wallet addresses. All Ganache accounts are assigned.")

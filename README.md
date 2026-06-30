@@ -15,45 +15,45 @@ GitHub: [@Feeeerro](https://github.com/Feeeerro)
 
 ### Backend
 
-- **Django 5.2** — REST API
-- **Django REST Framework** — API endpoints
-- **PostgreSQL** — database
-- **Web3.py** — blockchain interaction
-- **JWT** — authentication
+- **Django 5.2** - REST API
+- **Django REST Framework** - API endpoints
+- **PostgreSQL** - database
+- **Web3.py** - blockchain interaction
+- **JWT** - authentication
 
 ### Frontend
 
-- **React + Vite** — UI framework
-- **Tailwind CSS** — styling
-- **Axios** — HTTP client
-- **React Router** — navigation
+- **React + Vite** - UI framework
+- **Tailwind CSS** - styling
+- **Axios** - HTTP client
+- **React Router** - navigation
 
 ### Blockchain
 
-- **Solidity** — smart contracts
-- **Hardhat** — contract compilation and testing
-- **Ganache** — local blockchain
+- **Solidity** - smart contracts
+- **Hardhat** - contract compilation and testing
+- **Ganache** - local blockchain
 
 ### Infrastructure
 
-- **Docker + Docker Compose** — containerization
+- **Docker + Docker Compose** - containerization
 
 ---
 
 ## Features
 
-- 👤 **User roles** — Investor, Startupper, Judge
-- 🚀 **Startup management** — create and browse startups with filters
-- 📋 **Campaign management** — create campaigns with automatic smart contract deployment
-- ⚖️ **Judge approval system** — 3 judges must approve a campaign before it goes live
-- 💰 **Blockchain funding** — investors fund campaigns directly on-chain
-- 🔄 **Automatic finalization** — campaigns are finalized when the deadline passes for both authenticated and guest users
-- 💸 **Withdraw & Refund** — owners withdraw funds on success, investors get refunds on failure
-- 🔐 **JWT authentication** — secure login and registration
-- 🔗 **Wallet assignment** — each user gets a unique blockchain wallet address on registration
-- 🎛️ **Search and filter** — filter campaigns and startups by status and category
-- 📄 **Pagination** — 12 items per page on list pages
-- 📱 **Responsive design** — mobile-friendly navbar
+- 👤 **User roles** - Investor, Startupper, Judge
+- 🚀 **Startup management** - create and browse startups with filters
+- 📋 **Campaign management** - create campaigns with automatic smart contract deployment
+- ⚖️ **Judge approval system** - 3 judges must approve a campaign before it goes live
+- 💰 **Blockchain funding** - investors fund campaigns directly on-chain
+- 🔄 **Automatic finalization** - campaigns are finalized when the deadline passes for both authenticated and guest users
+- 💸 **Withdraw & Refund** - owners withdraw funds on success, investors get refunds on failure
+- 🔐 **JWT authentication** - secure login and registration
+- 🔗 **Wallet assignment** - each user gets a unique blockchain wallet address on registration
+- 🎛️ **Search and filter** - filter campaigns and startups by status and category
+- 📄 **Pagination** - 12 items per page on list pages
+- 📱 **Responsive design** - mobile-friendly navbar
 
 ---
 
@@ -152,7 +152,7 @@ DB_PASSWORD=your_db_password
 
 ### 3. Start the blockchain
 
-Start Ganache with the fixed mnemonic — this always generates the same accounts:
+Start Ganache with the fixed mnemonic - this always generates the same accounts:
 
 ```bash
 cd blockchain
@@ -167,7 +167,7 @@ ganache --database.dbPath ./ganache-db --wallet.mnemonic "angry stock army post 
 
 > Keep this terminal open. Ganache must be running whenever you use the application.
 
-> The `ganache-db` folder persists the blockchain state between restarts — contracts and transactions are preserved.
+> The `ganache-db` folder persists the blockchain state between restarts - contracts and transactions are preserved.
 
 ### 4. Install blockchain dependencies and compile contracts
 
@@ -347,20 +347,20 @@ Any judge rejects → Rejected (permanently blocked)
 
 Every time you work on the project, start these in order:
 
-**Terminal 1 — Blockchain:**
+**Terminal 1 - Blockchain:**
 
 ```bash
 cd blockchain
 start-ganache.bat
 ```
 
-**Terminal 2 — Backend + Database:**
+**Terminal 2 - Backend + Database:**
 
 ```bash
 docker-compose up
 ```
 
-**Terminal 3 — Frontend:**
+**Terminal 3 - Frontend:**
 
 ```bash
 cd frontend

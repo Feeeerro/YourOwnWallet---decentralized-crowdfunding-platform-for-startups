@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import CampaignCard from '../components/CampaignCard';
 import StartupCard from '../components/StartupCard';
+import Icon from '../components/Icon';
+import { PageHeader } from '../components/ui';
 
 export default function MyAccount() {
     const { user } = useAuth();
@@ -61,90 +63,73 @@ export default function MyAccount() {
         fetchData();
     }, []);
 
-    const getBadgeClass = (status) => {
-        switch (status) {
-            case 'active':
-                return 'bg-emerald-100 text-emerald-700';
-            case 'completed':
-                return 'bg-blue-100 text-blue-700';
-            case 'failed':
-                return 'bg-red-100 text-red-700';
-            case 'rejected':
-                return 'bg-gray-100 text-gray-600';
-            default:
-                return 'bg-amber-100 text-amber-700';
-        }
-    };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-4xl mx-auto px-6 py-12">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-4xl font-bold mb-1">
-                                {user.first_name} {user.last_name}
-                            </h1>
-                            <p className="text-gray-400">{user.email}</p>
-                        </div>
-                        <span className="bg-indigo-600 text-white text-sm font-medium px-4 py-1.5 rounded-full capitalize">
-                            {user.role}
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div>
+            <PageHeader
+                eyebrow="My Account"
+                title={`${user.first_name} ${user.last_name}`}
+                subtitle={user.email}
+                width="max-w-5xl"
+                actions={
+                    <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-sm font-medium text-accent-soft capitalize">
+                        <Icon name="user" />
+                        {user.role}
+                    </span>
+                }
+            />
 
-            <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+            <div className="mx-auto max-w-5xl space-y-6 px-5 py-10 sm:px-8">
                 {/* Profile info */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="glass p-6 md:p-7">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold text-gray-900">Profile</h2>
+                        <h2 className="text-lg font-semibold text-white">Profile</h2>
                         {user.role === 'startupper' && (
                             <Link
                                 to="/startups/create"
-                                className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                                className="btn btn-primary px-5 py-2"
                             >
-                                + Create Startup
+                                <Icon name="plus" />
+                                Create Startup
                             </Link>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                            <p className="eyebrow mb-1.5">
                                 Username
                             </p>
-                            <p className="text-sm text-gray-800 font-medium">{user.username}</p>
+                            <p className="text-sm font-medium text-white/90">{user.username}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                            <p className="eyebrow mb-1.5">
                                 Country
                             </p>
-                            <p className="text-sm text-gray-800">{user.country || '—'}</p>
+                            <p className="text-sm text-white/85">{user.country || '—'}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                            <p className="eyebrow mb-1.5">
                                 City
                             </p>
-                            <p className="text-sm text-gray-800">{user.city || '—'}</p>
+                            <p className="text-sm text-white/85">{user.city || '—'}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                            <p className="eyebrow mb-1.5">
                                 Phone
                             </p>
-                            <p className="text-sm text-gray-800">{user.phone || '—'}</p>
+                            <p className="text-sm text-white/85">{user.phone || '—'}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                            <p className="eyebrow mb-1.5">
                                 Address
                             </p>
-                            <p className="text-sm text-gray-800">{user.address || '—'}</p>
+                            <p className="text-sm text-white/85">{user.address || '—'}</p>
                         </div>
-                        <div className="col-span-2 md:col-span-3">
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+                        <div className="sm:col-span-2 md:col-span-3">
+                            <p className="eyebrow mb-1.5">
                                 Wallet Address
                             </p>
-                            <p className="text-sm text-indigo-600 font-mono break-all">
+                            <p className="font-mono text-sm break-all text-accent-soft">
                                 {user.wallet_address}
                             </p>
                         </div>
@@ -153,14 +138,14 @@ export default function MyAccount() {
 
                 {/* Judge — pending campaigns */}
                 {user.role === 'judge' && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="glass p-6 md:p-7">
+                        <h2 className="text-lg font-semibold text-white mb-4">
                             Campaigns Awaiting Your Vote (
                             {loading ? '...' : pendingCampaigns.length})
                         </h2>
-                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {loading && <p className="text-sm text-white/50">Loading...</p>}
                         {!loading && pendingCampaigns.length === 0 && (
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-sm text-white/50">
                                 No campaigns waiting for your vote.
                             </p>
                         )}
@@ -176,17 +161,17 @@ export default function MyAccount() {
 
                 {/* Startupper — my startups */}
                 {user.role === 'startupper' && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="glass p-6 md:p-7">
+                        <h2 className="text-lg font-semibold text-white mb-4">
                             My Startups ({startups.length})
                         </h2>
-                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {loading && <p className="text-sm text-white/50">Loading...</p>}
                         {!loading && startups.length === 0 && (
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-sm text-white/50">
                                 You haven't created any startups yet.{' '}
                                 <Link
                                     to="/startups/create"
-                                    className="text-indigo-600 hover:text-indigo-500"
+                                    className="text-accent hover:text-accent-soft"
                                 >
                                     Create your first one
                                 </Link>
@@ -204,13 +189,13 @@ export default function MyAccount() {
 
                 {/* Startupper — my campaigns */}
                 {user.role === 'startupper' && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="glass p-6 md:p-7">
+                        <h2 className="text-lg font-semibold text-white mb-4">
                             My Campaigns ({campaigns.length})
                         </h2>
-                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {loading && <p className="text-sm text-white/50">Loading...</p>}
                         {!loading && campaigns.length === 0 && (
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-sm text-white/50">
                                 You haven't created any campaigns yet.
                             </p>
                         )}
@@ -226,8 +211,8 @@ export default function MyAccount() {
 
                 {/* Investor — my investments */}
                 {user.role === 'investor' && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="glass p-6 md:p-7">
+                        <h2 className="text-lg font-semibold text-white mb-4">
                             My Investments (
                             {loading
                                 ? '...'
@@ -239,9 +224,9 @@ export default function MyAccount() {
                                   ).length}
                             )
                         </h2>
-                        {loading && <p className="text-gray-500 text-sm">Loading...</p>}
+                        {loading && <p className="text-sm text-white/50">Loading...</p>}
                         {!loading && transactions.length === 0 && (
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-sm text-white/50">
                                 You haven't invested in any campaign yet.
                             </p>
                         )}
@@ -265,15 +250,15 @@ export default function MyAccount() {
                                     <Link
                                         to={`/campaigns/${investment.campaign_id}`}
                                         key={investment.campaign_id}
-                                        className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 hover:shadow-sm transition-all group"
+                                        className="glass glass-hover group block p-5"
                                     >
-                                        <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
+                                        <p className="mb-1 font-medium text-white transition-colors group-hover:text-accent-soft">
                                             {investment.campaign_name}
                                         </p>
-                                        <p className="text-sm text-indigo-600 font-semibold">
+                                        <p className="text-sm font-semibold text-accent">
                                             {investment.total.toFixed(2)} ETH invested
                                         </p>
-                                        <p className="text-xs text-gray-500 mt-1">
+                                        <p className="mt-1 text-xs text-white/45">
                                             {investment.count} transaction
                                             {investment.count > 1 ? 's' : ''}
                                         </p>

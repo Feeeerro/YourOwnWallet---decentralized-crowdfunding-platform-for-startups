@@ -1,6 +1,30 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from './Icon';
+
+const linkClass = ({ isActive }) =>
+    `relative rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+        isActive ? 'text-white' : 'text-white/60 hover:text-white'
+    }`;
+
+const mobileLinkClass = ({ isActive }) =>
+    `rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+        isActive ? 'bg-white/[0.06] text-white' : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+    }`;
+
+export function Brand() {
+    return (
+        <Link to="/" className="group flex items-center gap-2.5" aria-label="YourOwnWallet home">
+            <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-accent-soft to-accent-strong text-[#1a1033] shadow-[0_0_24px_-4px_rgba(167,139,250,0.8)]">
+                <Icon name="wallet" className="size-4" strokeWidth={2.25} />
+            </span>
+            <span className="font-display text-lg font-semibold tracking-tight text-white">
+                YourOwn<span className="text-accent">Wallet</span>
+            </span>
+        </Link>
+    );
+}
 
 export default function Navbar() {
     const { user, logout } = useAuth();
@@ -14,145 +38,92 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                {/* Brand */}
-                <Link to="/" className="text-white font-bold text-xl tracking-tight">
-                    YourOwn<span className="text-indigo-400">Wallet</span>
-                </Link>
+        <nav className="sticky top-0 z-50 border-b border-line bg-ink/70 backdrop-blur-xl">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+                <Brand />
 
-                {/* Desktop links */}
-                <div className="hidden md:flex items-center gap-8">
-                    <Link
-                        to="/startups"
-                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                    >
+                {/* Desktop links (centered) */}
+                <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
+                    <NavLink to="/startups" className={linkClass}>
                         Startups
-                    </Link>
-                    <Link
-                        to="/campaigns"
-                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                    >
+                    </NavLink>
+                    <NavLink to="/campaigns" className={linkClass}>
                         Campaigns
-                    </Link>
+                    </NavLink>
+                    {user && (
+                        <NavLink to="/account" className={linkClass}>
+                            My Account
+                        </NavLink>
+                    )}
+                </div>
+
+                {/* Desktop actions */}
+                <div className="hidden items-center gap-3 md:flex">
                     {user ? (
                         <>
-                            <Link
-                                to="/account"
-                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                            >
-                                My Account
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-sm font-medium text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 px-4 py-2 rounded-lg transition-all"
-                            >
+                            <span className="hidden items-center gap-2 text-sm text-white/55 lg:flex">
+                                <Icon name="user" />
+                                {user.username}
+                            </span>
+                            <button onClick={handleLogout} className="btn btn-outline px-5 py-2">
                                 Logout
                             </button>
                         </>
                     ) : (
                         <>
-                            <Link
-                                to="/login"
-                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                            >
+                            <NavLink to="/login" className={linkClass}>
                                 Login
-                            </Link>
-                            <Link
-                                to="/register"
-                                className="text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors"
-                            >
+                            </NavLink>
+                            <Link to="/register" className="btn btn-outline px-5 py-2">
                                 Register
                             </Link>
                         </>
                     )}
                 </div>
 
-                {/* Mobile hamburger button */}
+                {/* Mobile hamburger */}
                 <button
-                    className="md:hidden text-gray-300 hover:text-white"
+                    className="grid size-11 cursor-pointer place-items-center rounded-xl text-white/75 hover:bg-white/5 hover:text-white md:hidden"
                     onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                    aria-expanded={menuOpen}
+                    aria-controls="mobile-menu"
                 >
-                    {menuOpen ? (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    ) : (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        </svg>
-                    )}
+                    <Icon name={menuOpen ? 'x' : 'menu'} className="size-6" />
                 </button>
             </div>
 
             {/* Mobile menu */}
             {menuOpen && (
-                <div className="md:hidden bg-gray-900 border-t border-gray-800 px-6 py-4 flex flex-col gap-4">
-                    <Link
-                        to="/startups"
-                        onClick={() => setMenuOpen(false)}
-                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                    >
+                <div
+                    id="mobile-menu"
+                    className="flex flex-col gap-1 border-t border-line bg-ink/95 px-5 py-4 md:hidden"
+                >
+                    <NavLink to="/startups" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
                         Startups
-                    </Link>
-                    <Link
-                        to="/campaigns"
-                        onClick={() => setMenuOpen(false)}
-                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                    >
+                    </NavLink>
+                    <NavLink to="/campaigns" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
                         Campaigns
-                    </Link>
+                    </NavLink>
                     {user ? (
                         <>
-                            <Link
-                                to="/account"
-                                onClick={() => setMenuOpen(false)}
-                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                            >
+                            <NavLink to="/account" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
                                 My Account
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-left text-sm font-medium text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 px-4 py-2 rounded-lg transition-all w-fit"
-                            >
+                            </NavLink>
+                            <button onClick={handleLogout} className="btn btn-outline mt-2 w-full">
+                                <Icon name="logout" />
                                 Logout
                             </button>
                         </>
                     ) : (
                         <>
-                            <Link
-                                to="/login"
-                                onClick={() => setMenuOpen(false)}
-                                className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                            >
+                            <NavLink to="/login" className={mobileLinkClass} onClick={() => setMenuOpen(false)}>
                                 Login
-                            </Link>
+                            </NavLink>
                             <Link
                                 to="/register"
                                 onClick={() => setMenuOpen(false)}
-                                className="text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors w-fit"
+                                className="btn btn-primary mt-2 w-full"
                             >
                                 Register
                             </Link>

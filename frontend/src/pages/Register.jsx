@@ -52,16 +52,18 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-            <div className="w-full max-w-lg">
+        <div className="relative flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden px-4 py-12">
+            <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+            <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[50rem] max-w-[120vw] -translate-x-1/2 rounded-full bg-accent-strong/30 blur-[130px]" aria-hidden="true" />
+            <div className="relative w-full max-w-lg">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Create an account</h1>
-                    <p className="text-gray-500 mt-2">Join the platform today</p>
+                    <h1 className="text-gradient text-3xl font-semibold tracking-tight sm:text-4xl">Create an account</h1>
+                    <p className="mt-2 text-white/55">Join the platform today</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div className="glass p-6 sm:p-8">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <div className="alert-error mb-6">
                             {error.split('\n').map((line, i) => (
                                 <p key={i} className="mb-1">
                                     {line}
@@ -71,83 +73,89 @@ export default function Register() {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="first_name" className="field-label">
                                     First Name
                                 </label>
                                 <input
+                                    id="first_name"
                                     name="first_name"
                                     value={formData.first_name}
                                     onChange={handleChange}
                                     required
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="field-input"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="last_name" className="field-label">
                                     Last Name
                                 </label>
                                 <input
+                                    id="last_name"
                                     name="last_name"
                                     value={formData.last_name}
                                     onChange={handleChange}
                                     required
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="field-input"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="username" className="field-label">
                                 Username
                             </label>
                             <input
+                                id="username"
                                 name="username"
                                 value={formData.username}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="email" className="field-label">
                                 Email
                             </label>
                             <input
                                 type="email"
+                                id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="password" className="field-label">
                                 Password
                             </label>
                             <input
                                 type="password"
+                                id="password"
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="role" className="field-label">
                                 Role
                             </label>
                             <select
+                                id="role"
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             >
                                 <option value="investor">Investor</option>
                                 <option value="startupper">Startupper</option>
@@ -155,69 +163,73 @@ export default function Register() {
                             </select>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="country" className="field-label">
                                     Country
                                 </label>
                                 <input
+                                    id="country"
                                     name="country"
                                     value={formData.country}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="field-input"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="city" className="field-label">
                                     City
                                 </label>
                                 <input
+                                    id="city"
                                     name="city"
                                     value={formData.city}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="field-input"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="phone" className="field-label">
                                 Phone
                             </label>
                             <input
+                                id="phone"
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="address" className="field-label">
                                 Address
                             </label>
                             <input
+                                id="address"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="field-input"
                             />
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                            className="btn btn-primary w-full py-3"
                         >
                             {loading ? 'Creating account...' : 'Create account'}
                         </button>
                     </form>
 
-                    <p className="text-center text-sm text-gray-500 mt-6">
+                    <p className="mt-6 text-center text-sm text-white/50">
                         Already have an account?{' '}
                         <Link
                             to="/login"
-                            className="text-indigo-600 hover:text-indigo-500 font-medium"
+                            className="font-medium text-accent hover:text-accent-soft"
                         >
                             Sign in
                         </Link>

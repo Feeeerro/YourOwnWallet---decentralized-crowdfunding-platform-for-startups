@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import Pagination from '../components/Pagination';
 import StartupCard from '../components/StartupCard';
+import Icon from '../components/Icon';
+import { EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui';
+import { buildStartupStats } from '../lib/visuals';
 
 const ITEMS_PER_PAGE = 12;
 
 export default function StartupList() {
+    const { user } = useAuth();
     const [startups, setStartups] = useState([]);
+    const [campaigns, setCampaigns] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -26,6 +32,11 @@ export default function StartupList() {
             })
             .catch(() => setError('Failed to load startups'))
             .finally(() => setLoading(false));
+
+        // campaign numbers are only used for the card stats: failures are not blocking
+        api.get('/campaign/')
+            .then((res) => setCampaigns(res.data))
+            .catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -35,6 +46,8 @@ export default function StartupList() {
         setFiltered(result);
         setCurrentPage(1);
     }, [statusFilter, categoryFilter, startups]);
+
+    const statsById = useMemo(() => buildStartupStats(campaigns), [campaigns]);
 
     const handleReset = () => {
         setStatusFilter('');
@@ -46,39 +59,40 @@ export default function StartupList() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    if (loading)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-gray-500">Loading startups...</p>
-            </div>
-        );
-
-    if (error)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-red-500">{error}</p>
-            </div>
-        );
+    if (loading) return <LoadingState label="Loading startups..." />;
+    if (error) return <ErrorState message={error} />;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-4xl font-bold mb-2">Startups</h1>
-                    <p className="text-gray-400">
-                        Discover innovative startups looking for investment
-                    </p>
-                </div>
-            </div>
+        <div>
+            <PageHeader
+                eyebrow="Explore"
+                title="Startups"
+                subtitle="Discover innovative startups looking for investment"
+                actions={
+                    user?.role === 'startupper' && (
+                        <Link to="/startups/create" className="btn btn-primary">
+                            <Icon name="plus" />
+                            Create Startup
+                        </Link>
+                    )
+                }
+            />
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
                 {/* Filters */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 flex flex-wrap gap-4 items-center">
+                <div className="glass mb-10 flex flex-wrap items-center gap-3 p-3">
+                    <span className="hidden items-center gap-2 pl-2 text-sm text-white/50 sm:flex">
+                        <Icon name="filter" />
+                        Filter
+                    </span>
+                    <label className="sr-only" htmlFor="status-filter">
+                        Status
+                    </label>
                     <select
+                        id="status-filter"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="field-input w-auto min-w-40 cursor-pointer"
                     >
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
@@ -86,10 +100,14 @@ export default function StartupList() {
                         <option value="inactive">Inactive</option>
                     </select>
 
+                    <label className="sr-only" htmlFor="category-filter">
+                        Category
+                    </label>
                     <select
+                        id="category-filter"
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="field-input w-auto min-w-44 cursor-pointer"
                     >
                         <option value="">All Categories</option>
                         {categories.map((cat) => (
@@ -100,29 +118,29 @@ export default function StartupList() {
                     </select>
 
                     {(statusFilter || categoryFilter) && (
-                        <button
-                            onClick={handleReset}
-                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                        >
+                        <button onClick={handleReset} className="btn btn-ghost py-2.5">
+                            <Icon name="x" />
                             Reset filters
                         </button>
                     )}
 
-                    <span className="ml-auto text-sm text-gray-500">
+                    <span className="ml-auto pr-2 text-sm text-white/50 tabular-nums">
                         {filtered.length} of {startups.length} startups
                     </span>
                 </div>
 
                 {/* Grid */}
                 {filtered.length === 0 ? (
-                    <div className="text-center py-20">
-                        <p className="text-gray-500">No startups match your filters.</p>
-                    </div>
+                    <EmptyState title="No startups match your filters." />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {paginated.map((startup) => (
-                                <StartupCard key={startup.id} startup={startup} />
+                                <StartupCard
+                                    key={startup.id}
+                                    startup={startup}
+                                    stats={statsById[startup.id]}
+                                />
                             ))}
                         </div>
 

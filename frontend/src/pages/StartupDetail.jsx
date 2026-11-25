@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import CampaignCard from '../components/CampaignCard';
+import Icon from '../components/Icon';
+import { EmptyState, ErrorState, LoadingState, Panel, SmartImage, StatusBadge } from '../components/ui';
+import {
+    CONTINENT_LABELS,
+    coverUrl,
+    formatDate,
+    formatEth,
+    logoUrl,
+    ownerLabel,
+} from '../lib/visuals';
 
 export default function StartupDetail() {
     const { id } = useParams();
@@ -22,107 +32,139 @@ export default function StartupDetail() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    if (loading)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-gray-500">Loading...</p>
-            </div>
-        );
-    if (error)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-red-500">{error}</p>
-            </div>
-        );
-    if (!startup)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-gray-500">Startup not found.</p>
-            </div>
-        );
+    if (loading) return <LoadingState />;
+    if (error) return <ErrorState message={error} />;
+    if (!startup) return <ErrorState message="Startup not found." />;
 
-    const isOwner =
-        user && startup.created_by === `${user.first_name} ${user.last_name} (${user.email})`;
+    const isOwner = user && startup.created_by === ownerLabel(user);
+    const raised = campaigns.reduce((sum, c) => sum + (Number(c.funded) || 0), 0);
+    const name = startup.startup_name;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-4xl mx-auto px-6 py-12">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h1 className="text-4xl font-bold mb-2">{startup.startup_name}</h1>
-                            <p className="text-gray-400">
-                                {startup.category} · {startup.country} · {startup.continent}
-                            </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-3">
-                            <span
-                                className={`text-xs font-medium px-3 py-1.5 rounded-full ${
-                                    startup.status === 'active'
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'bg-amber-500 text-white'
-                                }`}
-                            >
-                                {startup.status}
-                            </span>
-                            {isOwner && (
-                                <Link
-                                    to="/campaigns/create"
-                                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    + Create Campaign
-                                </Link>
-                            )}
-                        </div>
+        <div>
+            {/* Cover hero */}
+            <header className="relative">
+                <div className="mx-auto max-w-6xl px-3 pt-6 sm:px-6">
+                    <Link
+                        to="/startups"
+                        className="mb-4 ml-2 inline-flex items-center gap-2 text-sm text-white/55 transition-colors hover:text-white"
+                    >
+                        <Icon name="arrow-left" />
+                        All startups
+                    </Link>
+                    <div className="relative">
+                        <SmartImage
+                            src={coverUrl(name, 1400, 480)}
+                            seed={name}
+                            loading="eager"
+                            className="aspect-[2.4/1] rounded-3xl border border-line sm:aspect-[3.6/1]"
+                        />
+                        <div
+                            className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-ink via-ink/30 to-transparent"
+                            aria-hidden="true"
+                        />
                     </div>
-                </div>
-            </div>
 
-            <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                    <div className="relative -mt-14 flex flex-col gap-5 px-3 sm:-mt-16 sm:px-8 md:flex-row md:items-end md:justify-between">
+                        <div className="flex items-end gap-5">
+                            <SmartImage
+                                src={logoUrl(name)}
+                                seed={`${name}-logo`}
+                                className="size-24 shrink-0 rounded-2xl ring-[6px] ring-ink sm:size-28"
+                            />
+                            <div className="min-w-0 pb-1">
+                                <StatusBadge status={startup.status} className="mb-2" />
+                                <h1 className="text-gradient text-3xl font-semibold tracking-tight sm:text-4xl">
+                                    {name}
+                                </h1>
+                                <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/55">
+                                    <span className="flex items-center gap-1.5">
+                                        <Icon name="eth" className="size-3.5 text-accent" />
+                                        {startup.category}
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Icon name="globe" />
+                                        {startup.country} · {CONTINENT_LABELS[startup.continent] || startup.continent}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        {isOwner && (
+                            <Link to="/campaigns/create" className="btn btn-primary self-start md:self-auto">
+                                <Icon name="plus" />
+                                Create Campaign
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            <div className="mx-auto max-w-6xl space-y-6 px-5 py-10 sm:px-8">
+                {/* Key numbers */}
+                <dl className="glass grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                    <div className="p-6">
+                        <dt className="eyebrow">Total raised</dt>
+                        <dd className="mt-2 flex items-center gap-2 font-display text-2xl font-semibold tabular-nums">
+                            {formatEth(raised)} <Icon name="eth" className="size-5 text-accent" />
+                        </dd>
+                    </div>
+                    <div className="p-6">
+                        <dt className="eyebrow">Campaigns</dt>
+                        <dd className="mt-2 font-display text-2xl font-semibold tabular-nums">
+                            {campaigns.length}
+                        </dd>
+                    </div>
+                    <div className="p-6">
+                        <dt className="eyebrow">Active now</dt>
+                        <dd className="mt-2 font-display text-2xl font-semibold tabular-nums">
+                            {campaigns.filter((c) => c.status === 'active').length}
+                        </dd>
+                    </div>
+                </dl>
+
                 {/* About */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
-                    <p className="text-gray-600 leading-relaxed mb-6">{startup.description}</p>
-                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                <Panel title="About">
+                    <p className="mb-6 leading-relaxed text-white/70">{startup.description}</p>
+                    <div className="grid grid-cols-1 gap-5 border-t border-white/10 pt-5 sm:grid-cols-3">
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                                Address
+                            <p className="eyebrow mb-1.5">Address</p>
+                            <p className="flex items-start gap-2 text-sm text-white/85">
+                                <Icon name="map-pin" className="mt-0.5 size-4 shrink-0 text-white/40" />
+                                {startup.address}
                             </p>
-                            <p className="text-sm text-gray-700">{startup.address}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                                Created by
+                            <p className="eyebrow mb-1.5">Created by</p>
+                            <p className="flex items-start gap-2 text-sm break-words text-white/85">
+                                <Icon name="user" className="mt-0.5 size-4 shrink-0 text-white/40" />
+                                <span className="min-w-0 [overflow-wrap:anywhere]">{startup.created_by}</span>
                             </p>
-                            <p className="text-sm text-gray-700">{startup.created_by}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-                                Created at
-                            </p>
-                            <p className="text-sm text-gray-700">
-                                {new Date(startup.created_at).toLocaleDateString()}
+                            <p className="eyebrow mb-1.5">Created at</p>
+                            <p className="flex items-start gap-2 text-sm text-white/85">
+                                <Icon name="calendar" className="mt-0.5 size-4 shrink-0 text-white/40" />
+                                {formatDate(startup.created_at)}
                             </p>
                         </div>
                     </div>
-                </div>
+                </Panel>
 
                 {/* Campaigns */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                        Campaigns ({campaigns.length})
+                <section>
+                    <h2 className="mb-5 text-xl font-semibold">
+                        Campaigns <span className="text-white/40">({campaigns.length})</span>
                     </h2>
                     {campaigns.length === 0 ? (
-                        <p className="text-gray-500 text-sm">No campaigns for this startup yet.</p>
+                        <EmptyState title="No campaigns for this startup yet." />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {campaigns.map((campaign) => (
                                 <CampaignCard key={campaign.id} campaign={campaign} />
                             ))}
                         </div>
                     )}
-                </div>
+                </section>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { PageHeader } from '../components/ui';
 
 const CATEGORIES = [
     'Technology',
@@ -114,33 +115,27 @@ export default function CreateStartup() {
         }
     };
 
-    const inputClass =
-        'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
+    const inputClass = 'field-input';
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-2xl mx-auto px-6 py-12">
-                    <h1 className="text-4xl font-bold mb-2">Create Startup</h1>
-                    <p className="text-gray-400">Register your startup on the platform</p>
-                </div>
-            </div>
+        <div>
+            <PageHeader title="Create Startup" subtitle="Register your startup on the platform" width="max-w-2xl" />
 
-            <div className="max-w-2xl mx-auto px-6 py-8">
-                <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+                <div className="glass p-6 sm:p-8">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <div className="alert-error mb-6">
                             {error}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="startup_name" className="field-label">
                                 Startup Name
                             </label>
                             <input
+                                id="startup_name"
                                 name="startup_name"
                                 value={formData.startup_name}
                                 onChange={handleChange}
@@ -150,10 +145,11 @@ export default function CreateStartup() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="description" className="field-label">
                                 Description
                             </label>
                             <textarea
+                                id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -164,10 +160,11 @@ export default function CreateStartup() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="category" className="field-label">
                                 Category
                             </label>
                             <select
+                                id="category"
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
@@ -183,12 +180,13 @@ export default function CreateStartup() {
                             </select>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="country" className="field-label">
                                     Country
                                 </label>
                                 <select
+                                    id="country"
                                     name="country"
                                     value={formData.country}
                                     onChange={handleChange}
@@ -204,10 +202,11 @@ export default function CreateStartup() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="continent" className="field-label">
                                     Continent
                                 </label>
                                 <select
+                                    id="continent"
                                     name="continent"
                                     value={formData.continent}
                                     onChange={handleChange}
@@ -227,10 +226,11 @@ export default function CreateStartup() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="address" className="field-label">
                                 Address
                             </label>
                             <input
+                                id="address"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
@@ -240,10 +240,11 @@ export default function CreateStartup() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="status" className="field-label">
                                 Status
                             </label>
                             <select
+                                id="status"
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
@@ -258,7 +259,7 @@ export default function CreateStartup() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                            className="btn btn-primary w-full py-3"
                         >
                             {loading ? 'Creating...' : 'Create Startup'}
                         </button>

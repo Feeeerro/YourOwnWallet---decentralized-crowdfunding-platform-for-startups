@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import Pagination from '../components/Pagination';
 import CampaignCard from '../components/CampaignCard';
+import Icon from '../components/Icon';
+import { EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui';
 
 const ITEMS_PER_PAGE = 12;
 
 export default function CampaignList() {
+    const { user } = useAuth();
     const [campaigns, setCampaigns] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,39 +50,40 @@ export default function CampaignList() {
         currentPage * ITEMS_PER_PAGE
     );
 
-    if (loading)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-gray-500">Loading campaigns...</p>
-            </div>
-        );
-
-    if (error)
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-red-500">{error}</p>
-            </div>
-        );
+    if (loading) return <LoadingState label="Loading campaigns..." />;
+    if (error) return <ErrorState message={error} />;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-4xl font-bold mb-2">Campaigns</h1>
-                    <p className="text-gray-400">
-                        Browse and invest in blockchain-verified campaigns
-                    </p>
-                </div>
-            </div>
+        <div>
+            <PageHeader
+                eyebrow="Invest"
+                title="Campaigns"
+                subtitle="Browse and invest in blockchain-verified campaigns"
+                actions={
+                    user?.role === 'startupper' && (
+                        <Link to="/campaigns/create" className="btn btn-primary">
+                            <Icon name="plus" />
+                            Create Campaign
+                        </Link>
+                    )
+                }
+            />
 
-            <div className="max-w-7xl mx-auto px-6 py-8">
+            <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
                 {/* Filters */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 flex flex-wrap gap-4 items-center">
+                <div className="glass mb-10 flex flex-wrap items-center gap-3 p-3">
+                    <span className="hidden items-center gap-2 pl-2 text-sm text-white/50 sm:flex">
+                        <Icon name="filter" />
+                        Filter
+                    </span>
+                    <label className="sr-only" htmlFor="status-filter">
+                        Status
+                    </label>
                     <select
+                        id="status-filter"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="field-input w-auto min-w-40 cursor-pointer"
                     >
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
@@ -88,10 +93,14 @@ export default function CampaignList() {
                         <option value="rejected">Rejected</option>
                     </select>
 
+                    <label className="sr-only" htmlFor="category-filter">
+                        Category
+                    </label>
                     <select
+                        id="category-filter"
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="field-input w-auto min-w-44 cursor-pointer"
                     >
                         <option value="">All Categories</option>
                         {categories.map((cat) => (
@@ -102,27 +111,23 @@ export default function CampaignList() {
                     </select>
 
                     {(statusFilter || categoryFilter) && (
-                        <button
-                            onClick={handleReset}
-                            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                        >
+                        <button onClick={handleReset} className="btn btn-ghost py-2.5">
+                            <Icon name="x" />
                             Reset filters
                         </button>
                     )}
 
-                    <span className="ml-auto text-sm text-gray-500">
+                    <span className="ml-auto pr-2 text-sm text-white/50 tabular-nums">
                         {filtered.length} of {campaigns.length} campaigns
                     </span>
                 </div>
 
                 {/* Grid */}
                 {filtered.length === 0 ? (
-                    <div className="text-center py-20">
-                        <p className="text-gray-500">No campaigns match your filters.</p>
-                    </div>
+                    <EmptyState title="No campaigns match your filters." />
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {paginated.map((campaign) => (
                                 <CampaignCard key={campaign.id} campaign={campaign} />
                             ))}

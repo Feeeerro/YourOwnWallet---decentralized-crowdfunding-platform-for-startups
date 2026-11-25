@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import Icon from '../components/Icon';
+import { PageHeader } from '../components/ui';
 
 export default function CreateCampaign() {
     const navigate = useNavigate();
@@ -66,23 +68,16 @@ export default function CreateCampaign() {
         }
     };
 
-    const inputClass =
-        'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent';
+    const inputClass = 'field-input';
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-gray-900 text-white">
-                <div className="max-w-2xl mx-auto px-6 py-12">
-                    <h1 className="text-4xl font-bold mb-2">Create Campaign</h1>
-                    <p className="text-gray-400">Launch a new fundraising campaign</p>
-                </div>
-            </div>
+        <div>
+            <PageHeader title="Create Campaign" subtitle="Launch a new fundraising campaign" width="max-w-2xl" />
 
-            <div className="max-w-2xl mx-auto px-6 py-8">
-                <div className="bg-white rounded-xl border border-gray-200 p-8">
+            <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+                <div className="glass p-6 sm:p-8">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <div className="alert-error mb-6">
                             {error.split('\n').map((line, i) => (
                                 <p key={i}>{line}</p>
                             ))}
@@ -91,10 +86,11 @@ export default function CreateCampaign() {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="campaign_name" className="field-label">
                                 Campaign Name
                             </label>
                             <input
+                                id="campaign_name"
                                 name="campaign_name"
                                 value={formData.campaign_name}
                                 onChange={handleChange}
@@ -104,10 +100,11 @@ export default function CreateCampaign() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="description" className="field-label">
                                 Description
                             </label>
                             <textarea
+                                id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
@@ -117,15 +114,16 @@ export default function CreateCampaign() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="target" className="field-label">
                                     Funding Target (ETH)
                                 </label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     min="0.01"
+                                    id="target"
                                     name="target"
                                     value={formData.target}
                                     onChange={handleChange}
@@ -134,11 +132,12 @@ export default function CreateCampaign() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="deadline" className="field-label">
                                     Deadline
                                 </label>
                                 <input
                                     type="date"
+                                    id="deadline"
                                     name="deadline"
                                     value={formData.deadline}
                                     onChange={handleChange}
@@ -149,10 +148,11 @@ export default function CreateCampaign() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="startup" className="field-label">
                                 Startup
                             </label>
                             <select
+                                id="startup"
                                 name="startup"
                                 value={formData.startup}
                                 onChange={handleChange}
@@ -168,9 +168,10 @@ export default function CreateCampaign() {
                             </select>
                         </div>
 
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                            <p className="text-amber-700 text-sm">
-                                ⚠️ Creating a campaign will automatically deploy smart contracts on
+                        <div className="alert-warning flex gap-3">
+                            <Icon name="alert" className="mt-0.5 size-4 shrink-0" />
+                            <p>
+                                Creating a campaign will automatically deploy smart contracts on
                                 the blockchain. This may take a few seconds.
                             </p>
                         </div>
@@ -178,7 +179,7 @@ export default function CreateCampaign() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                            className="btn btn-primary w-full py-3"
                         >
                             {loading ? 'Creating... (deploying contracts)' : 'Create Campaign'}
                         </button>

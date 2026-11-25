@@ -30,62 +30,66 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-            <div className="w-full max-w-md">
+        <div className="relative flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden px-4 py-12">
+            <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+            <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[50rem] max-w-[120vw] -translate-x-1/2 rounded-full bg-accent-strong/30 blur-[130px]" aria-hidden="true" />
+            <div className="relative w-full max-w-md">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-                    <p className="text-gray-500 mt-2">Sign in to your account</p>
+                    <h1 className="text-gradient text-3xl font-semibold tracking-tight sm:text-4xl">Welcome back</h1>
+                    <p className="mt-2 text-white/55">Sign in to your account</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div className="glass p-6 sm:p-8">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                        <div className="alert-error mb-6">
                             {error}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="username" className="field-label">
                                 Username
                             </label>
                             <input
+                                id="username"
                                 name="username"
                                 value={formData.username}
                                 onChange={handleChange}
                                 autoComplete="username"
                                 required
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="field-input"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="password" className="field-label">
                                 Password
                             </label>
                             <input
                                 type="password"
+                                id="password"
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
                                 autoComplete="current-password"
                                 required
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="field-input"
                             />
                         </div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+                            className="btn btn-primary w-full py-3"
                         >
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>
                     </form>
 
-                    <p className="text-center text-sm text-gray-500 mt-6">
+                    <p className="mt-6 text-center text-sm text-white/50">
                         Don't have an account?{' '}
                         <Link
                             to="/register"
-                            className="text-indigo-600 hover:text-indigo-500 font-medium"
+                            className="font-medium text-accent hover:text-accent-soft"
                         >
                             Register
                         </Link>

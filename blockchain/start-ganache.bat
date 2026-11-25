@@ -1,0 +1,1 @@
+ganache --database.dbPath ./ganache-db --wallet.mnemonic "angry stock army post essence palace ride extra member ensure shell add"

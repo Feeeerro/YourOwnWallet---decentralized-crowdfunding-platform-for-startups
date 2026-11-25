@@ -16,4 +16,3 @@ node_modules
 hardhat-state.json
 ganache-db
 ganache.config.json
-start-ganache.bat
